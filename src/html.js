@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { withPrefix } from 'gatsby-link'
 import favicon from './assets/images/favicon.ico'
 
 export default class HTML extends React.Component {
@@ -50,8 +51,11 @@ export default class HTML extends React.Component {
             rel="stylesheet"
             type="text/css"
           />
-          <link href="/css/agency.css" rel="stylesheet" />
-          <link href="/css/landing-page.min.css" rel="stylesheet" />
+          <link href={withPrefix('/css/agency.css')} rel="stylesheet" />
+          <link
+            href={withPrefix('/css/landing-page.min.css')}
+            rel="stylesheet"
+          />
 
           {this.props.headComponents}
         </head>
