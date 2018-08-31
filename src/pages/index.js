@@ -43,7 +43,7 @@ class HTML extends Component {
       {
         title: '学習しながら報酬を得る',
         description:
-          'プログラミング習得の一番の近道は実際に動くものを作ってみることです。ハッカーコインで仕事を受注し、初g学者が実案件プロジェクトで報酬を得ながら学習できる仕組みを創ります。学習中の開発者にミッションや仕事を発注したり、今まで値段が付かなかった素人レベルの作品など、あらゆるレベルの学習・創造活動に価値を付けるトークンです。',
+          'プログラミング習得の一番の近道は実際に動くものを作ってみることです。ハッカーコインで仕事を受注し、初学者が実案件プロジェクトで報酬を得ながら学習できる仕組みを創ります。学習中の開発者にミッションや仕事を発注したり、今まで値段が付かなかった素人レベルの作品など、あらゆるレベルの学習・創造活動に価値を付けるトークンです。',
         icon: 'graduation-cap',
       },
       {
@@ -243,9 +243,9 @@ class HTML extends Component {
         ],
       },
       {
-        name: 'ヤバいWEB屋さん',
-        subheading: '投資 x プログラミング',
-        icon: 'https://avatars2.githubusercontent.com/u/9312373?s=460&v=4',
+        name: 'WEBの女神',
+        subheading: '海外で働きたいうぇぶ屋さん',
+        icon: 'https://yabaiwebyasan.com/wp-content/uploads/2018/06/やばさん.png',
 
         links: [
           { type: 'alis', id: 'yabaiwebyasan' },
