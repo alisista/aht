@@ -9,6 +9,7 @@ class Token extends Component {
     this.props.items.forEach((v, i) => {
       let items = []
       let mt = ''
+      let hr
       if (i !== 0) {
         mt = 'mt-5'
       }

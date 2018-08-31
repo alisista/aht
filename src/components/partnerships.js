@@ -9,14 +9,14 @@ class Partnerships extends Component {
     this.props.items.forEach((v, i) => {
       if (v.name == undefined) {
         partnership_items.push(
-          <div className="col-md-3 col-sm-6">
+          <div className="col-xl-3 col-sm-6 d-none d-xl-inline-block">
             <a href="#" />
           </div>
         )
       } else {
         partnership_items.push(
           <div
-            className="col-md-3 col-sm-6 text-center"
+            className="col-xl-3 col-sm-6 text-center"
             style={{ witeSpace: 'nowrap' }}
           >
             <a

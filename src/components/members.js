@@ -7,13 +7,9 @@ class Members extends Component {
     super(props)
   }
   render() {
-    let member_groups = []
     let member_items = []
     let members = _(this.props.items).shuffle()
     members.forEach((v, i) => {
-      if (i % 3 == 0) {
-        member_groups.push([])
-      }
       let links = []
       for (let v2 of v.links || []) {
         let img
@@ -52,8 +48,8 @@ class Members extends Component {
           </li>
         )
       }
-      member_groups[member_groups.length - 1].push(
-        <div className="col-sm-4">
+      member_items.push(
+        <div key={`member-` + (i + 1)} className="col-md-4 col-sm-6">
           <div className="team-member">
             <img className="mx-auto rounded-circle" src={v.icon} alt="" />
             <h4>{v.name}</h4>
@@ -62,9 +58,6 @@ class Members extends Component {
           </div>
         </div>
       )
-    })
-    member_groups.forEach(v => {
-      member_items.push(<div className="row text-center">{v}</div>)
     })
     return (
       <section className="bg-light" id="members">
@@ -77,7 +70,7 @@ class Members extends Component {
               </h3>
             </div>
           </div>
-          {member_items}
+          <div className="row text-center">{member_items}</div>
           <div className="row">
             <div className="col-lg-8 mx-auto text-center">
               <p className="large text-muted">
