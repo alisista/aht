@@ -12,7 +12,7 @@ class HTML extends Component {
       >
         <div className="container" style={{ zIndex: 100 }}>
           <div className="intro-text">
-            <div className="intro-lead-in">ALIS Hacker Token</div>
+            <div className="intro-lead-in">ALIS HackerToken</div>
             <div className="intro-heading text-uppercase mb-3">
               法定通貨に依存しない完全独自経済圏
             </div>

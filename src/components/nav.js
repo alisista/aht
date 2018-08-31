@@ -68,7 +68,7 @@ class Nav extends Component {
       >
         <div className="container">
           <a className="navbar-brand js-scroll-trigger" href="#page-top">
-            ALIS Hacker Token
+            ALIS HackerToken
           </a>
           <button
             className="navbar-toggler navbar-toggler-right"
