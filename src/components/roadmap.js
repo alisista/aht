@@ -15,7 +15,11 @@ class Roadmap extends Component {
       roadmap_items.push(
         <li className={inverted}>
           <div className="timeline-image">
-            <img className="rounded-circle img-fluid" src={v.image} alt="" />
+            <img
+              className="rounded-circle img-fluid"
+              src={withPrefix(v.image)}
+              alt=""
+            />
           </div>
           <div className="timeline-panel">
             <div className="timeline-heading">
