@@ -243,9 +243,9 @@ class HTML extends Component {
         ],
       },
       {
-        name: 'ヤバいWEB屋さん',
-        subheading: '投資 x プログラミング',
-        icon: 'https://avatars2.githubusercontent.com/u/9312373?s=460&v=4',
+        name: 'WEBの女神',
+        subheading: '海外で働きたいうぇぶ屋さん',
+        icon: 'https://yabaiwebyasan.com/wp-content/uploads/2018/06/やばさん.png',
 
         links: [
           { type: 'alis', id: 'yabaiwebyasan' },
