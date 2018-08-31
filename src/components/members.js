@@ -8,7 +8,7 @@ class Members extends Component {
   }
   render() {
     let member_items = []
-    let members = _(this.props.items).shuffle()
+    let members = this.props.items
     members.forEach((v, i) => {
       let links = []
       for (let v2 of v.links || []) {
