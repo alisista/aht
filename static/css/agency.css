@@ -707,3 +707,15 @@ ul.social-buttons li a:active, ul.social-buttons li a:focus, ul.social-buttons l
     opacity:1;
 }
 
+a.nav-link{
+    cursor:pointer;
+}
+
+#mainNav .navbar-toggler, .btn-primary{
+    color: steelblue;
+}
+
+.nav-user{
+    margin-left:10px;
+    height:100%;
+}

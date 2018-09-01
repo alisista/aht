@@ -1,10 +1,15 @@
 import React, { Component } from 'react'
+import auth from '../lib/auth'
 
 class Nav extends Component {
   constructor(props) {
     super(props)
+    this.state = {
+      user: null,
+    }
   }
   componentDidMount() {
+    this.auth = new auth(this)
     let $ = window.$
     // Closes responsive menu when a scroll trigger link is clicked
     $('.js-scroll-trigger').click(function() {
@@ -50,6 +55,12 @@ class Nav extends Component {
       }
     })
   }
+  login() {
+    this.auth.login()
+  }
+  logout() {
+    this.auth.logout()
+  }
   render() {
     let nav_items = []
     for (let v of this.props.items) {
@@ -58,6 +69,39 @@ class Nav extends Component {
           <a className="nav-link js-scroll-trigger" href={`#${v.id}`}>
             {v.name}
           </a>
+        </li>
+      )
+    }
+    let login_btn
+    if (this.state.user === null) {
+      login_btn = (
+        <li className="nav-item">
+          <a
+            className="nav-link"
+            onClick={() => {
+              this.login()
+            }}
+          >
+            ログイン
+          </a>
+        </li>
+      )
+    } else {
+      login_btn = (
+        <li className="nav-item" style={{ whiteSpace: 'nowrap' }}>
+          <a
+            className="nav-link d-inline-block"
+            onClick={() => {
+              this.logout()
+            }}
+          >
+            ログアウト
+          </a>
+          <img
+            title={this.state.user.displayName}
+            src={this.state.user.photoURL}
+            className="nav-user d-inline-block"
+          />
         </li>
       )
     }
@@ -78,13 +122,15 @@ class Nav extends Component {
             aria-controls="navbarResponsive"
             aria-expanded="false"
             aria-label="Toggle navigation"
-            style={{ color: 'steelblue' }}
           >
-            Menu
-            <i className="fa fa-bars" />
+            メニュー
+            <i className="fa fa-bars ml-2" />
           </button>
           <div className="collapse navbar-collapse" id="navbarResponsive">
-            <ul className="navbar-nav text-uppercase ml-auto">{nav_items}</ul>
+            <ul className="navbar-nav text-uppercase ml-auto">
+              {nav_items}
+              {login_btn}
+            </ul>
           </div>
         </div>
       </nav>
