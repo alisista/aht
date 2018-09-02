@@ -3,11 +3,6 @@ import uuidv4 from 'uuid/v4'
 import url from 'url'
 import _ from 'underscore'
 
-// waves
-const WavesAPI = require('@waves/waves-api')
-const WavesSignature = require('@waves/waves-signature-generator')
-const Waves = WavesAPI.create(WavesAPI.MAINNET_CONFIG)
-
 // firestore
 require('firebase/firestore')
 const config = {
@@ -25,28 +20,32 @@ class Auth {
   constructor(component, opts = {}) {
     this.opts = opts
     this.component = component
-    this.db = firebase.firestore()
-    this.provider = new firebase.auth.TwitterAuthProvider()
-    firebase.auth().useDeviceLanguage()
-    firebase.auth().onAuthStateChanged((user, obj) => {
-      if (user) {
-        let twitter_user = {
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          uid: user.uid,
-          id: user.providerData[0].uid,
-        }
-        this.component.setState({ user: twitter_user, isUser: true }, () => {
-          this.getUserInfo(twitter_user)
-        })
-      } else {
-        if (this.opts.redirect === true) {
-          window.location.href = '/'
+    if (typeof window !== 'undefined') {
+      const WavesAPI = require('@waves/waves-api')
+      this.Waves = WavesAPI.create(WavesAPI.MAINNET_CONFIG)
+      this.db = firebase.firestore()
+      this.provider = new firebase.auth.TwitterAuthProvider()
+      firebase.auth().useDeviceLanguage()
+      firebase.auth().onAuthStateChanged((user, obj) => {
+        if (user) {
+          let twitter_user = {
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            uid: user.uid,
+            id: user.providerData[0].uid,
+          }
+          this.component.setState({ user: twitter_user, isUser: true }, () => {
+            this.getUserInfo(twitter_user)
+          })
         } else {
-          this.component.setState({ user: null, isUser: false })
+          if (this.opts.redirect === true) {
+            window.location.href = '/'
+          } else {
+            this.component.setState({ user: null, isUser: false })
+          }
         }
-      }
-    })
+      })
+    }
   }
 
   // users
@@ -154,7 +153,7 @@ class Auth {
     if (
       uid != this.component.state.user.uid ||
       random_value != this.component.state.userInfo.random_value ||
-      Waves.crypto.isValidAddress(address) == false
+      this.Waves.crypto.isValidAddress(address) == false
     ) {
       this.component.alerts.pushAlert(
         `認証に失敗しました。時間を置いて再度お試し下さい。`

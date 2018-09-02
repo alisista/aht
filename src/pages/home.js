@@ -19,7 +19,7 @@ moment.locale('ja')
 class HTML extends Component {
   constructor(props) {
     super(props)
-    let redirectedUrl = props.location.href
+    let redirectedUrl = props.location.href || ''
     const parsedUrl = url.parse(redirectedUrl, true)
     let redirect = null
     if (

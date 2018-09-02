@@ -3,15 +3,19 @@ import Helmet from 'react-helmet'
 import Layout from '../components/layout'
 import Footer from '../components/footer'
 
-import auth from '../lib/auth'
 import url from 'url'
 
 class HTML extends Component {
   constructor(props) {
     super(props)
-    let redirectedUrl = props.location.href
+    console.log(props)
+    let redirectedUrl = props.location.href || ''
     const parsedUrl = url.parse(redirectedUrl, true)
     let redirect = null
+    let noredirect = false
+    if (parsedUrl.query.noredirect == '1') {
+      noredirect = true
+    }
     if (
       parsedUrl.query.a != undefined &&
       parsedUrl.query.s != undefined &&
@@ -21,16 +25,26 @@ class HTML extends Component {
       redirect = props.location.origin + '/home/' + props.location.search
     }
     this.state = {
+      noredirect: noredirect,
       redirect: redirect,
     }
   }
+  componentDidMount() {
+    if (this.state.noredirect !== true) {
+      setTimeout(() => {
+        this.redirect()
+      }, 5000)
+    }
+  }
   render() {
-    console.log(this.state.redirect)
     let user
-    let body =
-      this.state.redirect === undefined
-        ? this.render_wrongPage()
-        : this.render_oauth()
+    let redirect_url = this.state.redirect
+    let body
+    if (redirect_url === undefined) {
+      body = this.render_wrongPage()
+    } else {
+      body = this.render_oauth(redirect_url)
+    }
     let footer_links = [
       { key: 'twitter', href: 'https://twitter.com/alishackers' },
       { key: 'github', href: 'https://github.com/alisista' },
@@ -94,7 +108,10 @@ class HTML extends Component {
       </div>
     )
   }
-  render_oauth() {
+  redirect() {
+    window.location.href = this.state.redirect
+  }
+  render_oauth(redirect_url) {
     return (
       <div className="page">
         <div className="page-content">
@@ -109,8 +126,13 @@ class HTML extends Component {
             <p className="h4 text-muted font-weight-normal mb-7">
               自動的にリダイレクトされない場合は、下のボタンをクリックして手動で移動して下さい。
             </p>
-
-            <a className="btn btn-primary" href={this.state.redirect}>
+            <a
+              className="btn btn-primary"
+              onClick={() => {
+                this.redirect()
+              }}
+              style={{ color: 'white' }}
+            >
               <i className="fe fe-arrow-left mr-2" />
               認証を続ける
             </a>
