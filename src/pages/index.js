@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Helmet from 'react-helmet'
 
 import Layout from '../components/layout'
 import Nav from '../components/nav'
@@ -322,6 +323,20 @@ class HTML extends Component {
     ]
     return (
       <Layout>
+        <Helmet
+          link={[
+            {
+              rel: 'stylesheet',
+              type: 'text/css',
+              href: '/css/agency.css',
+            },
+            {
+              rel: 'stylesheet',
+              type: 'text/css',
+              href: '/css/common.css',
+            },
+          ]}
+        />
         <Nav items={nav_items} />
         <Header />
         <Vision items={visions} />

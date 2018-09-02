@@ -97,11 +97,13 @@ class Nav extends Component {
           >
             ログアウト
           </a>
-          <img
-            title={this.state.user.displayName}
-            src={this.state.user.photoURL}
-            className="nav-user d-inline-block"
-          />
+          <a href="/home/">
+            <img
+              title={this.state.user.displayName}
+              src={this.state.user.photoURL}
+              className="nav-user d-inline-block"
+            />
+          </a>
         </li>
       )
     }

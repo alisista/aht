@@ -13,6 +13,7 @@ export default class HTML extends React.Component {
           <meta
             name="viewport"
             content="width=device-width, initial-scale=1, shrink-to-fit=no"
+            n
           />
 
           <link
@@ -51,12 +52,11 @@ export default class HTML extends React.Component {
             rel="stylesheet"
             type="text/css"
           />
-          <link href={withPrefix('/css/agency.css')} rel="stylesheet" />
+
           <link
             href={withPrefix('/css/landing-page.min.css')}
             rel="stylesheet"
           />
-
           {this.props.headComponents}
         </head>
         <body id="page-top" {...this.props.bodyAttributes}>
@@ -74,8 +74,8 @@ export default class HTML extends React.Component {
             crossOrigin="anonymous"
           />
           <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js" />
-
           <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js" />
+          <script src={withPrefix('/tabler/js/tabler.js')} />
         </body>
       </html>
     )

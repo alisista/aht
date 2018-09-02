@@ -892,6 +892,26 @@
   version "0.0.32"
   resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.0.32.tgz#0d3cb31022f8427ea58c008af32b80da126ca4e3"
 
+"@waves/waves-api@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@waves/waves-api/-/waves-api-1.4.0.tgz#5c42cc875a1166d248a1d84a833934abe84b93a2"
+  dependencies:
+    "@waves/waves-signature-generator" "0.14.0"
+    bignumber.js "7.0.1"
+    crypto-js "3.1.9-1"
+    node-fetch "1.7.3"
+    parse-json-bignumber "0.0.2"
+    ts-api-validator "2.1.2"
+    ts-utils "6.0.1"
+
+"@waves/waves-signature-generator@0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@waves/waves-signature-generator/-/waves-signature-generator-0.14.0.tgz#e176745b16d789d20fd4991c9b81f91dc56d5168"
+  dependencies:
+    base64-js "1.3.0"
+    bignumber.js "7.2.1"
+    crypto-js "3.1.9-1"
+
 "@webassemblyjs/ast@1.5.13":
   version "1.5.13"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.5.13.tgz#81155a570bd5803a30ec31436bc2c9c0ede38f25"
@@ -1803,7 +1823,7 @@ base64-arraybuffer@0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/base64-arraybuffer/-/base64-arraybuffer-0.1.5.tgz#73926771923b5a19747ad666aa5cd4bf9c6e9ce8"
 
-base64-js@^1.0.2:
+base64-js@1.3.0, base64-js@^1.0.2:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.3.0.tgz#cab1e6118f051095e58b5281aea8c1cd22bfc0e3"
 
@@ -1854,6 +1874,18 @@ better-queue@^3.8.6:
 big.js@^3.1.3:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-3.2.0.tgz#a5fc298b81b9e0dca2e458824784b65c52ba588e"
+
+bignumber.js@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.0.1.tgz#8d2ff74fb2e7a78cbfc3a57bd63cd6106bf8903a"
+
+bignumber.js@7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.2.1.tgz#80c048759d826800807c4bfd521e50edbba57a5f"
+
+bignumber.js@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.1.0.tgz#db6f14067c140bd46624815a7916c92d9b6c24b1"
 
 binary-extensions@^1.0.0:
   version "1.11.0"
@@ -2633,6 +2665,10 @@ crypto-browserify@^3.11.0:
     public-encrypt "^4.0.0"
     randombytes "^2.0.0"
     randomfill "^1.0.3"
+
+crypto-js@3.1.9-1, crypto-js@^3.1.9-1:
+  version "3.1.9-1"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-3.1.9-1.tgz#fda19e761fc077e01ffbfdc6e9fdfc59e8806cd8"
 
 crypto-random-string@^1.0.0:
   version "1.0.0"
@@ -5811,7 +5847,13 @@ mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@
   dependencies:
     minimist "0.0.8"
 
-moment@^2.21.0:
+moment-timezone@^0.5.21:
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.21.tgz#3cba247d84492174dbf71de2a9848fa13207b845"
+  dependencies:
+    moment ">= 2.9.0"
+
+"moment@>= 2.9.0", moment@^2.21.0:
   version "2.22.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
 
@@ -5909,16 +5951,16 @@ node-eta@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/node-eta/-/node-eta-0.9.0.tgz#9fb0b099bcd2a021940e603c64254dc003d9a7a8"
 
-node-fetch@2.1.2:
-  version "2.1.2"
-  resolved "http://registry.npmjs.org/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
-
-node-fetch@^1.0.1:
+node-fetch@1.7.3, node-fetch@^1.0.1, node-fetch@^1.7.3:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.3.tgz#980f6f72d85211a5347c6b2bc18c5b84c3eb47ef"
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
+
+node-fetch@2.1.2:
+  version "2.1.2"
+  resolved "http://registry.npmjs.org/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
 
 node-forge@0.7.5:
   version "0.7.5"
@@ -6321,6 +6363,10 @@ parse-glob@^3.0.4:
     is-dotfile "^1.0.0"
     is-extglob "^1.0.0"
     is-glob "^2.0.0"
+
+parse-json-bignumber@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/parse-json-bignumber/-/parse-json-bignumber-0.0.2.tgz#0e436d93e45e50f0ce860ae2aafcc53096c597df"
 
 parse-json@^2.2.0:
   version "2.2.0"
@@ -8335,6 +8381,34 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
+ts-api-validator@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/ts-api-validator/-/ts-api-validator-2.1.2.tgz#b661abbc8e83af61cbb1b17943bd8f281459bbd5"
+  dependencies:
+    ts-utils "^4.0.2"
+
+ts-api-validator@^2.1.0:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/ts-api-validator/-/ts-api-validator-2.1.3.tgz#ede08261e91f87e051b3de1f92318da669f62f64"
+  dependencies:
+    ts-utils "^6.0.2"
+
+ts-utils@6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/ts-utils/-/ts-utils-6.0.1.tgz#e35299ae8f76535cca1046850760903dd6da39ac"
+
+ts-utils@^4.0.2:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/ts-utils/-/ts-utils-4.5.0.tgz#be3cfde0037b29f251fd1fc4aa212294d83c7656"
+
+ts-utils@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/ts-utils/-/ts-utils-5.3.0.tgz#7319855d46119375cccb43cacca4deb12293507f"
+
+ts-utils@^6.0.2:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/ts-utils/-/ts-utils-6.0.4.tgz#efac40935a62a9827d2c9655db320e93d541fc37"
+
 tslib@1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
@@ -8645,6 +8719,17 @@ watchpack@^1.5.0:
     chokidar "^2.0.2"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+
+waves-api@^0.25.1:
+  version "0.24.2"
+  resolved "https://registry.yarnpkg.com/waves-api/-/waves-api-0.24.2.tgz#5639637661b5dc30c67246d199dbea45a008b725"
+  dependencies:
+    bignumber.js "^4.1.0"
+    crypto-js "^3.1.9-1"
+    node-fetch "^1.7.3"
+    parse-json-bignumber "0.0.2"
+    ts-api-validator "^2.1.0"
+    ts-utils "^5.3.0"
 
 wbuf@^1.1.0, wbuf@^1.7.2:
   version "1.7.3"

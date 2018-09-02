@@ -656,48 +656,7 @@ section#token :-ms-input-placeholder {
   font-family: 'Rounded Mplus 1c', 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-footer {
-  padding: 25px 0;
-  text-align: center;
-}
 
-footer span.copyright {
-  font-size: 90%;
-  line-height: 40px;
-  text-transform: none;
-  font-family: 'Rounded Mplus 1c', 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-footer ul.quicklinks {
-  font-size: 90%;
-  line-height: 40px;
-  margin-bottom: 0;
-  text-transform: none;
-  font-family: 'Rounded Mplus 1c', 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-ul.social-buttons {
-  margin-bottom: 0;
-}
-
-ul.social-buttons li a {
-  font-size: 20px;
-  line-height: 40px;
-  display: block;
-  width: 40px;
-  height: 40px;
-  -webkit-transition: all 0.3s;
-  -moz-transition: all 0.3s;
-  transition: all 0.3s;
-  color: white;
-  border-radius: 100%;
-  outline: none;
-  background-color: #212529;
-}
-
-ul.social-buttons li a:active, ul.social-buttons li a:focus, ul.social-buttons li a:hover {
-  background-color: #fed136;
-}
 
 #partnerships a{
     opacity: 0.5;
@@ -707,9 +666,6 @@ ul.social-buttons li a:active, ul.social-buttons li a:focus, ul.social-buttons l
     opacity:1;
 }
 
-a.nav-link{
-    cursor:pointer;
-}
 
 #mainNav .navbar-toggler, .btn-primary{
     color: steelblue;
@@ -719,3 +675,5 @@ a.nav-link{
     margin-left:10px;
     height:100%;
 }
+
+
