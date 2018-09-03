@@ -4,21 +4,15 @@ Create firebase project
 
 and enable database, storage
 
-Install `direnv` to set project local environment
+Add `.env.development` file and edit
 
 ```
-$ brew install direnv
-$ direnv edit .
-```
-
-Edit local environment
-
-```
-export FIREBASE_API_KEY={Your Firebase API Key}
-export FIREBASE_PROJECT_ID={Your Firebase Project ID}
-export FIREBASE_DATABASE_NAME={Your Firebase Database Name}
-export FIREBASE_BUCKET={Your Firebase Bucket Name}
-export FIREBASE_SENDER_ID={Your Firebase Sender Id}
+FIREBASE_API_KEY={Your Firebase API Key}
+FIREBASE_PROJECT_ID={Your Firebase Project ID}
+FIREBASE_DATABASE_NAME={Your Firebase Database Name}
+FIREBASE_BUCKET={Your Firebase Bucket Name}
+FIREBASE_SENDER_ID={Your Firebase Sender Id}
+WAVES_REDIRECT={development server host}
 ```
 
 Package install
