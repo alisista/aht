@@ -2,7 +2,13 @@
 
 Create firebase project
 
-and enable database, storage
+Enable following firebase service 
+
+- Database
+- Storage
+- Authentication Sign-in method => twitter
+
+Don't forget to add firebase callback url to `Callback URLs` at [Twitter App Settings](https://apps.twitter.com/app)
 
 Add `.env.development` file and edit
 
