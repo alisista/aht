@@ -1,5 +1,6 @@
 # Custome
 .node-version
+.envrc
 
 # Project dependencies
 .env.*
