@@ -1,3 +1,4 @@
+import React, { Component } from 'react'
 import firebase from 'firebase'
 import uuidv4 from 'uuid/v4'
 import url from 'url'
@@ -5,6 +6,18 @@ import _ from 'underscore'
 
 // firestore
 require('firebase/firestore')
+const modals = {
+  error_account_removal: {
+    title: (
+      <div>
+        <i className="text-danger fas fa-ban" /> エラー！
+      </div>
+    ),
+    body:
+      'アカウント取り消しに失敗しました。時間を置いてもう一度お試し下さい。',
+    cancel_text: '確認',
+  },
+}
 const config = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com`,
@@ -25,16 +38,11 @@ class Auth {
       this.Waves = WavesAPI.create(WavesAPI.MAINNET_CONFIG)
       this.db = firebase.firestore()
       this.provider = new firebase.auth.TwitterAuthProvider()
+      this.provider_github = new firebase.auth.GithubAuthProvider()
       firebase.auth().useDeviceLanguage()
-      firebase.auth().onAuthStateChanged((user, obj) => {
+      firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          let twitter_user = {
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            uid: user.uid,
-            id: user.providerData[0].uid,
-          }
-          this.component.setState({ user: twitter_user, isUser: true }, () => {
+          this.setUser(user, twitter_user => {
             this.getUserInfo(twitter_user)
           })
         } else {
@@ -94,6 +102,17 @@ class Auth {
         err(e)
       })
   }
+  completeTask(mission_id, task_id) {
+    let userInfo = this.component.state.userInfo || {}
+    if (userInfo.missions == undefined) {
+      userInfo.missions = {}
+    }
+    if (userInfo.missions[mission_id] == undefined) {
+      userInfo.missions[mission_id] = { tasks: {} }
+    }
+    userInfo.missions[mission_id].tasks[task_id] = Date.now()
+    this.setUserInfo('missions', userInfo.missions, () => {})
+  }
 
   getUserInfo(user) {
     this.db
@@ -103,6 +122,7 @@ class Auth {
       .then(ss => {
         let userInfo = ss.data() || {}
         this.component.setState({ userInfo: userInfo }, () => {
+          this.getServerInfo(user)
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
@@ -111,6 +131,106 @@ class Auth {
       .catch(e => {
         console.log(e)
       })
+  }
+  getServerInfo(user) {
+    this.db
+      .collection('users_server')
+      .doc(user.uid)
+      .get()
+      .then(ss => {
+        let serverInfo = ss.data() || {}
+        this.component.setState({ serverInfo: serverInfo }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+
+  setUser(user, cb) {
+    let twitter_user = {
+      created_at: user.metadata.creationTime,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      uid: user.uid,
+      id: user.providerData[0].uid,
+    }
+    let social_links = {}
+    user.providerData.forEach(v => {
+      social_links[v.providerId] = v
+    })
+    this.component.setState(
+      { user: twitter_user, isUser: true, social_links: social_links },
+      () => {
+        if (cb != undefined) {
+          cb(twitter_user)
+        }
+      }
+    )
+  }
+  link_discord() {
+    this.genRandomValue(random_value => {
+      let oauth_url = `https://discordapp.com/api/oauth2/authorize?client_id=486270221825474562&redirect_uri=${encodeURIComponent(
+        process.env.BACKEND_SERVER_ORIGIN
+      )}%2Foauth%2Fdiscord&response_type=code&scope=guilds%20identify%20messages.read&state=${random_value}_${
+        this.component.state.user.uid
+      }`
+      window.open(oauth_url, 'firebaseAuth', 'height=315,width=400')
+      window.location.href = oauth_url
+    })
+  }
+  link_github() {
+    firebase
+      .auth()
+      .currentUser.linkWithPopup(this.provider_github)
+      .then(result => {
+        this.setUser(result.user)
+      })
+      .catch(error => {
+        this.component.showModal({
+          title: (
+            <div>
+              <i className="text-danger fas fa-ban" /> 認証エラー！
+            </div>
+          ),
+          body: 'そのアカウントは既に他のユーザーに使われています。',
+          cancel_text: '確認',
+        })
+      })
+  }
+  unlink_github() {
+    firebase
+      .auth()
+      .currentUser.unlink('github.com')
+      .then(result => {
+        this.setUser(result)
+      })
+      .catch(error => {
+        this.component.showModal(modals.error_account_removal)
+      })
+  }
+  unlink_discord() {
+    this.genRandomValue(random_value => {
+      fetch(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/remove/discord/${
+          this.component.state.user.uid
+        }/${random_value}/`,
+        {
+          method: 'POST',
+        }
+      )
+        .then(res => res.json())
+        .then(json => {
+          if (json.error == undefined) {
+            console.log(json)
+            this.getServerInfo(this.component.state.user)
+          } else {
+            this.component.showModal(modals.error_account_removal)
+          }
+        })
+        .catch(() => {
+          this.component.showModal(modals.error_account_removal)
+        })
+    })
   }
 
   login() {
@@ -175,7 +295,7 @@ class Auth {
         delete waves_addresses[k].receiver
       }
     }
-    this.setWavesAddress(waves_addresses, () => {
+    this.setUserInfo('waves_addresses', waves_addresses, () => {
       this.component.alerts.pushAlert(
         `受け取りアドレスを${address} に変更しました！`,
         `success`
@@ -216,7 +336,7 @@ class Auth {
           address.receiver = true
         }
         waves_addresses[address.address] = address
-        this.setWavesAddress(waves_addresses, () => {
+        this.setUserInfo('waves_addresses', waves_addresses, () => {
           this.addAddressToPool(address.address, () => {
             this.component.alerts.pushAlert(
               `${address.address} を追加しました！`,
@@ -227,10 +347,10 @@ class Auth {
       })
     }
   }
-  setWavesAddress(waves_addresses, cb) {
-    this.updateData({ waves_addresses: waves_addresses }, () => {
+  setUserInfo(field, value, cb) {
+    this.updateData({ [field]: value }, () => {
       let userInfo = this.component.state.userInfo || {}
-      userInfo.waves_addresses = waves_addresses
+      userInfo[field] = value
       this.component.setState({ userInfo: userInfo }, () => {})
       cb()
     })
@@ -272,7 +392,7 @@ class Auth {
   removeWavesAddress(address) {
     let waves_addresses = this.component.state.userInfo.waves_addresses || {}
     delete waves_addresses[address]
-    this.setWavesAddress(waves_addresses, () => {
+    this.setUserInfo('waves_addresses', waves_addresses, () => {
       this.removeAddressFromPool(address, () => {
         this.component.alerts.pushAlert(`${address} を削除しました！`)
       })

@@ -29,11 +29,6 @@ class HTML extends Component {
       { name: '提携', id: 'partnerships' },
       { name: 'トークン', id: 'token' },
     ]
-    let footer_links = [
-      { key: 'twitter', href: 'https://twitter.com/alishackers' },
-      { key: 'github', href: 'https://github.com/alisista' },
-      { key: 'discord', href: 'https://discord.gg/TyKbbrT' },
-    ]
     let visions = [
       {
         title: '創造活動によって価値を産出',
@@ -346,7 +341,7 @@ class HTML extends Component {
         <Members items={members} />
         <Partnerships items={partnerships} />
         <Token items={token} />
-        <Footer items={footer_links} />
+        <Footer />
       </Layout>
     )
   }
