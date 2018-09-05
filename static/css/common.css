@@ -84,3 +84,11 @@ a{
 .waves-receiver:hover{
     opacity:1;
 }
+.card.social-unlinked{
+    background-color: #eee;
+    opacity:0.75;
+    cursor:pointer;
+}
+.card.social-unlinked:hover{
+    opacity:1;
+}

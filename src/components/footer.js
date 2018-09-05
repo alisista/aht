@@ -1,12 +1,18 @@
 import React, { Component } from 'react'
 
-class HTML extends Component {
+class Footer extends Component {
   constructor(props) {
     super(props)
   }
   render() {
     let link_items = []
-    for (let v of this.props.items) {
+    let items = this.props.items || [
+      { key: 'twitter', href: 'https://twitter.com/alishackers' },
+      { key: 'github', href: 'https://github.com/alisista' },
+      { key: 'discord', href: 'https://discord.gg/TyKbbrT' },
+    ]
+
+    for (let v of items) {
       link_items.push(
         <li className="list-inline-item">
           <a href={v.href} target="_blank">
@@ -37,4 +43,4 @@ class HTML extends Component {
   }
 }
 
-export default HTML
+export default Footer
