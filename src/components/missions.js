@@ -235,7 +235,6 @@ class Missions extends Component {
         })
     })
   }
-
   render() {
     let completed_tasks =
       (((this.props.userInfo || {}).missions || {}).join || {}).tasks || {}
@@ -253,15 +252,19 @@ class Missions extends Component {
         }
       }
     }
+    let revoke = (((this.props.userInfo || {}).missions || {}).join || {})
+      .revoke
     let tasks = [
       {
         id: '1',
+        task_id: 'task-1',
         task: 'ハッカー部ウェブサイトにツイッターでログイン',
         done: true,
         date: moment(this.props.user.created_at).format('x') * 1,
       },
       {
         id: '2',
+        task_id: 'task-2',
         task: 'Wavesアドレスを登録',
         btn_txt: '登録',
         done: waves_done,
@@ -270,6 +273,7 @@ class Missions extends Component {
       },
       {
         id: '3',
+        task_id: 'task-3',
         task: (
           <div>
             ハッカー部ツイッターアカウント
@@ -289,6 +293,7 @@ class Missions extends Component {
       },
       {
         id: '4',
+        task_id: 'task-4',
         task: (
           <div>
             ハッカー部
@@ -308,6 +313,7 @@ class Missions extends Component {
       },
       {
         id: '5',
+        task_id: 'task-5',
         task: (
           <div>
             ハッカー部
@@ -372,8 +378,14 @@ class Missions extends Component {
         task = <del>{v.task}</del>
         date = moment(v.date).fromNow()
       }
+      let tr_class = ''
+      if (revoke != undefined && revoke.includes(v.task_id)) {
+        index = <i className="fa fa-ban" />
+        index_color = 'danger'
+        tr_class = 'table-danger'
+      }
       tasks_html.push(
-        <tr>
+        <tr className={tr_class}>
           <td>
             <span className={`stamp stamp-sm bg-${index_color}`}>{index}</span>
           </td>
@@ -385,22 +397,113 @@ class Missions extends Component {
     let completed_icon, completed_html
     if (progress == 100) {
       completed_icon = <i className="text-success fa fa-check-circle mr-3" />
-      completed_html = (
-        <tr style={{ backgroundColor: '#ddd' }}>
-          <td>
-            {' '}
-            <span className={`stamp stamp-sm bg-danger`}>
-              <i className="fa fa-award" />
-            </span>
-          </td>
-          <td className="text-danger">
-            おめでとうございます！Waves独自トークンを自動送信する機能の開発が完了次第100AHTが付与されます！数日ほどお待ち下さい！
-          </td>
-          <td />
-        </tr>
-      )
-      if (this.props.component.state.isComplete !== true) {
-        this.props.component.setState({ isComplete: true })
+      if (this.props.userInfo.missions.join.confirmed != undefined) {
+        let isConfirmed = false
+        for (let v of this.props.history || []) {
+          if (v.mission_id == 'join') {
+            isConfirmed = true
+            break
+          }
+        }
+        if (revoke != undefined) {
+          completed_html = (
+            <tr style={{ backgroundColor: '#ddd' }}>
+              <td>
+                {' '}
+                <span className={`stamp stamp-sm bg-danger`}>
+                  <i className="fa fa-ban" />
+                </span>
+              </td>
+              <td className="text-danger">
+                いくつかのタスクでソーシャルアカウントの重複使用があったため、認証に失敗しました。以前に別のユーザーに使われていないソーシャルアカウントで再トライして下さい。
+              </td>
+              <td>
+                {' '}
+                <button
+                  className="btn btn-warning"
+                  onClick={() => {
+                    this.props.auth.retry()
+                  }}
+                  style={{ minWidth: '60px', cursor: 'pointer' }}
+                >
+                  再トライ
+                </button>
+              </td>
+            </tr>
+          )
+        } else if (isConfirmed == true) {
+          completed_html = (
+            <tr style={{ backgroundColor: '#ddd' }}>
+              <td>
+                {' '}
+                <span className={`stamp stamp-sm bg-danger`}>
+                  <i className="fa fa-award" />
+                </span>
+              </td>
+              <td className="text-danger">
+                おめでとうございます！トークンが配布されました。トークン獲得履歴をお確かめ下さい。
+              </td>
+              <td>
+                {' '}
+                <button
+                  className="btn btn-success"
+                  style={{ minWidth: '60px', cursor: 'default' }}
+                >
+                  確定済
+                </button>
+              </td>
+            </tr>
+          )
+        } else {
+          completed_html = (
+            <tr style={{ backgroundColor: '#ddd' }}>
+              <td>
+                {' '}
+                <span className={`stamp stamp-sm bg-danger`}>
+                  <i className="fa fa-award" />
+                </span>
+              </td>
+              <td className="text-danger">
+                おめでとうございます！ミッション達成を認証中です。２４時間以内に認証されトークン配布が確定されますので少々お待ち下さい。
+              </td>
+              <td>
+                {' '}
+                <button
+                  className="btn btn-success"
+                  style={{ minWidth: '60px', cursor: 'default' }}
+                >
+                  認証中
+                </button>
+              </td>
+            </tr>
+          )
+        }
+      } else {
+        completed_html = (
+          <tr style={{ backgroundColor: '#ddd' }}>
+            <td>
+              {' '}
+              <span className={`stamp stamp-sm bg-danger`}>
+                <i className="fa fa-award" />
+              </span>
+            </td>
+            <td className="text-danger">
+              おめでとうございます！ミッション達成を認証してトークン配布手続きを開始するために確定ボタンをクリックして下さい。一度確定したミッションは取り消せなくなり、そのタスクで使用したソーシャルアカウントは別のユーザーで同一タスク遂行には使用できません。
+            </td>
+            <td>
+              {' '}
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  this.props.auth.confirmMission('join')
+                }}
+                style={{ minWidth: '60px' }}
+              >
+                確定
+              </button>
+            </td>
+          </tr>
+        )
       }
     }
     return (

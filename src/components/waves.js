@@ -96,7 +96,14 @@ class Waves extends Component {
           <tr>
             <td>{receiver}</td>
             <td style={{ wordBreak: 'break-all' }}>
-              <b>{v.address}</b>
+              <b>
+                <a
+                  href={`https://wavesexplorer.com/address/${v.address}`}
+                  target="_blank"
+                >
+                  {v.address}
+                </a>
+              </b>
             </td>
             <td style={{ fontSize: '12px' }}>
               <span style={{ whiteSpace: 'nowrap' }}>

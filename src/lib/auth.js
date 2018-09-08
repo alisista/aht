@@ -102,6 +102,96 @@ class Auth {
         err(e)
       })
   }
+  confirmMission(mission_id) {
+    let userInfo = this.component.state.userInfo || {}
+    if (userInfo.missions == undefined) {
+      userInfo.missions = {}
+    }
+    if (userInfo.missions[mission_id] == undefined) {
+      userInfo.missions[mission_id] = { tasks: {} }
+    }
+    if (userInfo.missions[mission_id].confirmed == undefined) {
+      userInfo.missions[mission_id].confirmed = Date.now()
+    }
+    let tasks = []
+    let isError = false
+    for (let v of this.component.mission.tasks) {
+      if (v.social != undefined) {
+        if (
+          (this.component.state.social_links || {})[`${v.social}.com`] !=
+          undefined
+        ) {
+          tasks.push({
+            task_id: v.id,
+            social: v.social,
+            id: this.component.state.social_links[`${v.social}.com`].uid,
+          })
+        } else if (
+          (this.component.state.serverInfo || {})[v.social] != undefined
+        ) {
+          tasks.push({
+            task_id: v.id,
+            social: v.social,
+            id: this.component.state.serverInfo[v.social].id,
+          })
+        } else {
+          isError = true
+        }
+      } else {
+        tasks.push(false)
+      }
+    }
+    if (isError == true) {
+      this.component.showModal({
+        title: (
+          <div>
+            <i className="text-danger fas fa-ban" /> 認証エラー！
+          </div>
+        ),
+        body: 'エラーが発生しました！時間を置いてもう一度お試し下さい。',
+        cancel_text: '確認',
+      })
+      return
+    }
+    let mission_confirmed = {
+      uid: this.component.state.user.uid,
+      mission_id: 'join',
+      date: Date.now(),
+      tasks: tasks,
+      confirmed: false,
+    }
+    let confirmation_id = `join_${mission_confirmed.uid}`
+    this.db
+      .collection('mission_pool')
+      .doc(confirmation_id)
+      .set(mission_confirmed)
+      .then(ss => {
+        this.setUserInfo('missions', userInfo.missions, () => {
+          this.component.showModal({
+            title: (
+              <div>
+                <i className="text-success fas fa-check" /> ミッション確定！
+              </div>
+            ),
+            body:
+              'ミッションを確定しました。２４時間以内に認証されます。しばらくお待ち下さい。',
+            cancel_text: '確認',
+          })
+        })
+      })
+      .catch(e => {
+        console.log(e)
+        this.component.showModal({
+          title: (
+            <div>
+              <i className="text-danger fas fa-ban" /> 認証エラー！
+            </div>
+          ),
+          body: 'エラーが発生しました！時間を置いてもう一度お試し下さい。',
+          cancel_text: '確認',
+        })
+      })
+  }
   completeTask(mission_id, task_id) {
     let userInfo = this.component.state.userInfo || {}
     if (userInfo.missions == undefined) {
@@ -123,6 +213,8 @@ class Auth {
         let userInfo = ss.data() || {}
         this.component.setState({ userInfo: userInfo }, () => {
           this.getServerInfo(user)
+          this.getUserHistory(user)
+          this.getUserPayment(user)
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
@@ -145,7 +237,65 @@ class Auth {
         console.log(e)
       })
   }
+  getUserHistory(user) {
+    this.db
+      .collection('users')
+      .doc(user.uid)
+      .collection('history')
+      .get()
+      .then(ss => {
+        let history = []
+        ss.forEach(doc => {
+          history.push(doc.data())
+        })
+        history = _(history).sortBy(v => {
+          return v.date * -1
+        })
+        this.component.setState({ history: history }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+  getUserPayment(user) {
+    this.db
+      .collection('users')
+      .doc(user.uid)
+      .collection('payment')
+      .get()
+      .then(ss => {
+        let payment = []
+        ss.forEach(doc => {
+          payment.push(doc.data())
+        })
+        payment = _(payment).sortBy(v => {
+          return v.date * -1
+        })
+        this.component.setState({ payment: payment }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
 
+  retry() {
+    let missions = this.component.state.userInfo.missions
+    let revoke = missions.join.revoke
+    for (let k in missions.join.tasks) {
+      if (revoke.includes('task-' + k)) {
+        delete missions.join.tasks[k]
+      }
+    }
+    delete missions.join.revoke
+    console.log(missions)
+
+    this.setUserInfo('missions', missions, () => {
+      this.component.alerts.pushAlert(
+        `重複アカウントによるタスクを取り消しました。別アカウントで再トライして下さい！`,
+        `success`
+      )
+    })
+  }
   setUser(user, cb) {
     let twitter_user = {
       created_at: user.metadata.creationTime,
@@ -174,7 +324,7 @@ class Auth {
       )}%2Foauth%2Fdiscord&response_type=code&scope=guilds%20identify%20messages.read&state=${random_value}_${
         this.component.state.user.uid
       }`
-      window.open(oauth_url, 'firebaseAuth', 'height=315,width=400')
+      //window.open(oauth_url, 'firebaseAuth', 'height=315,width=400')
       window.location.href = oauth_url
     })
   }
@@ -193,6 +343,54 @@ class Auth {
             </div>
           ),
           body: 'そのアカウントは既に他のユーザーに使われています。',
+          cancel_text: '確認',
+        })
+      })
+  }
+  registerPayment(amount, address) {
+    let uid = this.component.state.user.uid
+    let payment = this.component.state.payment
+    let date = Date.now()
+    let transaction = {
+      amount: amount,
+      address: address,
+      date: date,
+      status: 'requested',
+    }
+    let transaction_pool = {
+      uid: uid,
+      amount: amount,
+      address: address,
+      date: date,
+      status: 'requested',
+    }
+    payment.unshift(transaction)
+    this.db
+      .collection('users')
+      .doc(uid)
+      .collection('payment')
+      .doc(`${date}_${amount}`)
+      .set(transaction)
+      .then(() => {
+        this.component.setState({ payment: payment })
+      })
+    this.db
+      .collection('payment_pool')
+      .doc(uid + '_' + date)
+      .set(transaction_pool)
+      .then(() => {
+        this.component.showModal({
+          title: (
+            <div>
+              <i className="text-warning fas fa-exclamation-triangle" />{' '}
+              支払い手続き開始！
+            </div>
+          ),
+          body: (
+            <p>
+              トークンの送信リストに登録しました。数分～数十分以内に指定のアドレスにトークンが送信されます。手続きの進行状況は支払い履歴から確認できます。
+            </p>
+          ),
           cancel_text: '確認',
         })
       })

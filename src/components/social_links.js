@@ -54,7 +54,9 @@ class Social_Links extends Component {
           this.props.userInfo.missions != undefined &&
           this.props.userInfo.missions.join != undefined &&
           this.props.userInfo.missions.join.tasks != undefined &&
-          this.props.userInfo.missions.join.tasks[opts.mission_no] != undefined
+          this.props.userInfo.missions.join.tasks[opts.mission_no] !=
+            undefined &&
+          this.props.userInfo.missions.join.confirmed == undefined
         ) {
           delete this.props.userInfo.missions.join.tasks[opts.mission_no]
           this.props.auth.updateData(

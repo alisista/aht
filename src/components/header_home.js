@@ -8,8 +8,12 @@ class Header_Home extends Component {
     let user
     if (this.props.user != undefined) {
       let aht = '0.00000000'
-      if (this.props.isComplete === true) {
-        aht = '100.00000000'
+      if (
+        this.props.serverInfo != undefined &&
+        this.props.serverInfo.amount != undefined &&
+        this.props.serverInfo.amount.aht != undefined
+      ) {
+        aht = `${this.props.serverInfo.amount.aht.earned}.00000000`
       }
       user = (
         <a

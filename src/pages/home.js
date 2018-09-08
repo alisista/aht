@@ -17,7 +17,9 @@ import Waves from '../components/waves'
 import Alert from '../components/alert'
 import Social_Links from '../components/social_links'
 import Missions from '../components/missions'
-
+import History from '../components/history'
+import Payment from '../components/payment'
+import Profile from '../components/profile'
 import auth from '../lib/auth'
 import alerts from '../lib/alerts'
 
@@ -41,7 +43,22 @@ class Home extends Component {
     if (parsedUrl.query.error != undefined) {
       error = parsedUrl.query.error
     }
+    this.mission = {
+      id: 'join',
+      aht: 100,
+      tasks: [
+        { id: 'task-1' },
+        { id: 'task-2' },
+        { id: 'task-3', social: 'twitter' },
+        { id: 'task-4', social: 'discord' },
+        { id: 'task-5', social: 'github' },
+      ],
+    }
     this.state = {
+      serverInfo: {},
+      userInfo: {},
+      history: [],
+      payment: [],
       error: error,
       modal: {},
       oauth: redirect,
@@ -116,7 +133,7 @@ class Home extends Component {
         <Header_Home
           auth={this.auth}
           user={this.state.user}
-          isComplete={this.state.isComplete}
+          serverInfo={this.state.serverInfo}
         />
         <div className="my-3 my-md-5">
           <div className="container">
@@ -129,7 +146,6 @@ class Home extends Component {
       </Layout>
     )
   }
-
   render_dashboard() {
     return [
       <Waves
@@ -140,6 +156,15 @@ class Home extends Component {
       />,
       <div className="row">
         <div className="col-lg-4">
+          <Profile
+            user={this.state.user}
+            payment={this.state.payment}
+            serverInfo={this.state.serverInfo}
+            userInfo={this.state.userInfo}
+            payment={this.state.payment}
+            showModal={this.showModal}
+            auth={this.auth}
+          />
           <Social_Links
             auth={this.auth}
             user={this.state.user}
@@ -152,13 +177,31 @@ class Home extends Component {
         <div className="col-lg-8">
           <Missions
             component={this}
+            history={this.state.history}
             auth={this.auth}
             showModal={this.showModal}
             user={this.state.user}
             userInfo={this.state.userInfo}
             serverInfo={this.state.serverInfo}
-            isComplete={this.state.isComplete}
             social_links={this.state.social_links}
+          />
+          <History
+            component={this}
+            history={this.state.history}
+            auth={this.auth}
+            showModal={this.showModal}
+            user={this.state.user}
+            userInfo={this.state.userInfo}
+            serverInfo={this.state.serverInfo}
+          />
+          <Payment
+            component={this}
+            payment={this.state.payment}
+            auth={this.auth}
+            showModal={this.showModal}
+            user={this.state.user}
+            userInfo={this.state.userInfo}
+            serverInfo={this.state.serverInfo}
           />
         </div>
       </div>,
