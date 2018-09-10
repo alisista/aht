@@ -17,6 +17,15 @@ const modals = {
       'アカウント取り消しに失敗しました。時間を置いてもう一度お試し下さい。',
     cancel_text: '確認',
   },
+  error_general: {
+    title: (
+      <div>
+        <i className="text-danger fas fa-ban" /> エラーが発生しました！
+      </div>
+    ),
+    body: '時間を置いてからもう一度申請して下さい。',
+    cancel_text: '確認',
+  },
 }
 const config = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -218,6 +227,9 @@ class Auth {
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
+          if (this.component.state.user.id === process.env.ADMIN_TWITTER_ID) {
+            this.getAdminPayment()
+          }
         })
       })
       .catch(e => {
@@ -257,6 +269,27 @@ class Auth {
         console.log(e)
       })
   }
+  getAdminPayment() {
+    this.db
+      .collection('history')
+      .where('type', '==', 'outsource')
+      .get()
+      .then(ss => {
+        let history = []
+        ss.forEach(doc => {
+          history.push(doc.data())
+        })
+        history = _(history).sortBy(v => {
+          return v.date * -1
+        })
+        console.log(history)
+        this.component.setState({ admin_history: history }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+
   getUserPayment(user) {
     this.db
       .collection('users')
@@ -317,6 +350,43 @@ class Auth {
       }
     )
   }
+  makePayment(to, amount, what_for) {
+    this.genRandomValue(random_value => {
+      console.log(to)
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/payment/`,
+        {
+          random_value: random_value,
+          uid: this.component.state.user.uid,
+          twitter_id: this.component.state.user.id,
+          amount: amount,
+          to: to.uid,
+          what_for: what_for,
+          photoURL: to.photoURL,
+          displayName: to.displayName,
+        },
+        json => {
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            this.getUserInfo(this.component.state.user)
+            this.component.showModal({
+              title: (
+                <div>
+                  <i className="text-green fas fa-check" />{' '}
+                  支払いが完了しました！
+                </div>
+              ),
+              body: `${
+                to.displayName
+              }さんにハッカー部から${amount}AHTの支払いをしました！`,
+              cancel_text: '確認',
+            })
+          }
+        }
+      )
+    })
+  }
   link_discord() {
     this.genRandomValue(random_value => {
       let oauth_url = `https://discordapp.com/api/oauth2/authorize?client_id=486270221825474562&redirect_uri=${encodeURIComponent(
@@ -324,7 +394,6 @@ class Auth {
       )}%2Foauth%2Fdiscord&response_type=code&scope=guilds%20identify%20messages.read&state=${random_value}_${
         this.component.state.user.uid
       }`
-      //window.open(oauth_url, 'firebaseAuth', 'height=315,width=400')
       window.location.href = oauth_url
     })
   }
@@ -419,7 +488,6 @@ class Auth {
         .then(res => res.json())
         .then(json => {
           if (json.error == undefined) {
-            console.log(json)
             this.getServerInfo(this.component.state.user)
           } else {
             this.component.showModal(modals.error_account_removal)

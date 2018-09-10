@@ -20,7 +20,7 @@ class History extends Component {
             <td>
               <b className="text-primary">{v.amount}</b> AHT
             </td>
-            <td>ALISハッカー部に入部</td>
+            <td>{v.reason || `ALISハッカー部に入部`}</td>
           </tr>
         )
       })

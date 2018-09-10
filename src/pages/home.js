@@ -20,6 +20,7 @@ import Missions from '../components/missions'
 import History from '../components/history'
 import Payment from '../components/payment'
 import Profile from '../components/profile'
+import Admin from '../components/admin'
 import auth from '../lib/auth'
 import alerts from '../lib/alerts'
 
@@ -58,6 +59,7 @@ class Home extends Component {
       serverInfo: {},
       userInfo: {},
       history: [],
+      admin_history: [],
       payment: [],
       error: error,
       modal: {},
@@ -202,6 +204,12 @@ class Home extends Component {
             user={this.state.user}
             userInfo={this.state.userInfo}
             serverInfo={this.state.serverInfo}
+          />
+          <Admin
+            user={this.state.user}
+            history={this.state.admin_history}
+            showModal={this.showModal}
+            auth={this.auth}
           />
         </div>
       </div>,
