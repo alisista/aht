@@ -194,12 +194,6 @@ class Home extends Component {
         <Helmet
           meta={meta}
           title={title}
-          script={[
-            {
-              src: '/tabler/js/tabler.js',
-              type: 'text/javascript',
-            },
-          ]}
           link={[
             {
               rel: 'stylesheet',
