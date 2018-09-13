@@ -34,6 +34,16 @@ class Header_Home extends Component {
         </a>
       )
     }
+    let links = []
+    for (let v of this.props.links || []) {
+      links.push(
+        <div className="nav-item d-none d-md-flex">
+          <a href={v.href} className="btn btn-sm btn-outline-primary">
+            {v.name}
+          </a>
+        </div>
+      )
+    }
     return (
       <div className="page">
         <div className="flax-fill">
@@ -41,9 +51,10 @@ class Header_Home extends Component {
             <div className="container">
               <div className="d-flex">
                 <a className="header-brand" href="/">
-                  ALIS HackerToken
+                  {this.props.title || `ALIS Hacker's Club`}
                 </a>
                 <div className="d-flex order-lg-2 ml-auto">
+                  {links}
                   <div className="dropdown">
                     {user}
                     <div className="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
@@ -58,6 +69,14 @@ class Header_Home extends Component {
                     </div>
                   </div>
                 </div>
+                <a
+                  href="#"
+                  className="header-toggler d-lg-none ml-3 ml-lg-0"
+                  data-toggle="collapse"
+                  data-target="#headerMenuCollapse"
+                >
+                  <span className="header-toggler-icon" />
+                </a>
               </div>
             </div>
           </div>

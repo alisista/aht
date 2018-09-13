@@ -58,9 +58,6 @@ class Nav extends Component {
   login() {
     this.auth.login()
   }
-  logout() {
-    this.auth.logout()
-  }
   render() {
     let nav_items = []
     for (let v of this.props.items) {
@@ -89,14 +86,6 @@ class Nav extends Component {
     } else {
       login_btn = (
         <li className="nav-item" style={{ whiteSpace: 'nowrap' }}>
-          <a
-            className="nav-link d-inline-block"
-            onClick={() => {
-              this.logout()
-            }}
-          >
-            ログアウト
-          </a>
           <a href="/home/">
             <img
               title={this.state.user.displayName}
@@ -114,7 +103,7 @@ class Nav extends Component {
       >
         <div className="container">
           <a className="navbar-brand js-scroll-trigger" href="#page-top">
-            ALIS HackerToken
+            ALIS Hacker's Club
           </a>
           <button
             className="navbar-toggler navbar-toggler-right"
@@ -131,6 +120,14 @@ class Nav extends Component {
           <div className="collapse navbar-collapse" id="navbarResponsive">
             <ul className="navbar-nav text-uppercase ml-auto">
               {nav_items}
+              <li className="nav-item">
+                <a
+                  className="nav-link js-scroll-trigger"
+                  href="/rankings/alis/"
+                >
+                  ランキング
+                </a>
+              </li>
               {login_btn}
             </ul>
           </div>

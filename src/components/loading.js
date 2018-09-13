@@ -9,7 +9,10 @@ class Loading extends Component {
       <div className="page" style={{ width: '100%' }}>
         <div className="page-content">
           <div className="container text-center">
-            <div className="display-1 text-muted mb-5">
+            <div
+              className="display-1 text-muted mb-5"
+              style={{ fontSize: '50px' }}
+            >
               <i className="si si-exclamation" /> データ取得中
             </div>
 

@@ -116,6 +116,8 @@ class Home extends Component {
     })
     let body =
       this.state.isUser === undefined ? <Loading /> : this.render_dashboard()
+    let nav_links = [{ name: 'ランキング', href: '/rankings/alis/' }]
+
     return (
       <Layout>
         <Helmet
@@ -133,6 +135,7 @@ class Home extends Component {
           ]}
         />
         <Header_Home
+          links={nav_links}
           auth={this.auth}
           user={this.state.user}
           serverInfo={this.state.serverInfo}
