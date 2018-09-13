@@ -314,7 +314,7 @@ class Home extends Component {
               style={{
                 backgroundImage: `url(https://alis.to/d/api/info_icon/${
                   article.u
-                }/icon/${article.p}.jpeg)`,
+                }/icon/${article.p})`,
               }}
             />
 
