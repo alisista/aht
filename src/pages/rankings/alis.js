@@ -74,6 +74,7 @@ class Home extends Component {
 
   render() {
     let alerts = this.state.alerts || []
+    const date = this.state.date
     let body =
       this.state.articles === undefined ? <Loading /> : this.render_rankings()
     const nav_links = [{ name: 'トークン', href: '/home/' }]
@@ -84,22 +85,32 @@ class Home extends Component {
       { key: 'gosyuin', name: '御朱印', icon: 'cannabis' },
     ]
     let topics_html = []
-    for (let v of topics) {
-      let active = ''
-      if (this.state.topic == v.key) {
-        active = 'active'
+    if (this.state.date != undefined) {
+      for (let v of topics) {
+        let active = ''
+        if (this.state.topic == v.key) {
+          active = 'active'
+        }
+        let href = '/rankings/alis/'
+        let topic = ''
+        if (this.state.date != undefined) {
+          href += `?daily=${date}`
+          if (v.key != null) {
+            href += '&topic=' + v.key
+            topic = '&topic=' + v.key
+          }
+        }
+        topics_html.push(
+          <li className="nav-item" key={`topic-${v.key || 'all'}`}>
+            <a
+              href={`/rankings/alis/?daily=${this.state.date}${topic}`}
+              className={`nav-link ${active}`}
+            >
+              <i className={`${v.fa_type || 'fa'} fa-${v.icon}`} /> {v.name}
+            </a>
+          </li>
+        )
       }
-      let href = `/rankings/alis/?daily=${this.state.date}`
-      if (v.key != null) {
-        href += '&topic=' + v.key
-      }
-      topics_html.push(
-        <li className="nav-item">
-          <a href={href} className={`nav-link ${active}`}>
-            <i className={`${v.fa_type || 'fa'} fa-${v.icon}`} /> {v.name}
-          </a>
-        </li>
-      )
     }
     const topic_names = {
       all: '総合',
