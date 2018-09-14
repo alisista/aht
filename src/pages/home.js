@@ -116,7 +116,10 @@ class Home extends Component {
     })
     let body =
       this.state.isUser === undefined ? <Loading /> : this.render_dashboard()
-    let nav_links = [{ name: 'ランキング', href: '/rankings/alis/' }]
+    let nav_links = [
+      { name: 'ALISランキング', href: '/rankings/alis/' },
+      { name: 'note企画', href: '/rankings/note/' },
+    ]
 
     return (
       <Layout>
