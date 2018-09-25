@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import Helmet from 'react-helmet'
-
+import Helmet from '../components/helmet'
 import Layout from '../components/layout'
 import Nav from '../components/nav'
 import Header from '../components/header'
@@ -319,18 +318,9 @@ class HTML extends Component {
     return (
       <Layout>
         <Helmet
-          link={[
-            {
-              rel: 'stylesheet',
-              type: 'text/css',
-              href: '/css/agency.css',
-            },
-            {
-              rel: 'stylesheet',
-              type: 'text/css',
-              href: '/css/common.css',
-            },
-          ]}
+          title="ALIS HackerToken | ALISハッカー部"
+          desc="法定通貨に依存しない完全独自経済圏を目指す分散型開発者グループ"
+          links={['/css/agency.css', '/css/common.css']}
         />
         <Nav items={nav_items} />
         <Header />

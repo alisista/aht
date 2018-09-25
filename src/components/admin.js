@@ -37,6 +37,7 @@ class Admin extends Component {
     let to = this.state.selectedUser
     let amount = window.$('#token_amount').val() * 1
     let what_for = window.$('#what_for').val()
+    let type = window.$('#payment_type').val()
     if (to == undefined) {
       this.props.showModal({
         title: (
@@ -79,7 +80,7 @@ class Admin extends Component {
         }さんに${amount}AHTを『${what_for}』についてお支払いしてよろしいですか？`,
         exec_text: '実行',
         exec: () => {
-          this.props.auth.makePayment(to, amount, what_for)
+          this.props.auth.makePayment(to, amount, what_for, type)
         },
       })
     }
@@ -117,7 +118,7 @@ class Admin extends Component {
           <div className="card-body">
             <div className="row">
               <div className="col-md-6">
-                <label className="form-label">依頼先</label>
+                <label className="form-label">供給先</label>
                 <div className="input-group">
                   <select
                     className="form-control"
@@ -126,7 +127,7 @@ class Admin extends Component {
                       this.selectUser()
                     }}
                   >
-                    <option value="">依頼先を選択してください</option>
+                    <option value="">供給先を選択してください</option>
                     {users}
                   </select>
                   <span className="input-group-append">
@@ -137,7 +138,7 @@ class Admin extends Component {
                 </div>
               </div>
               <div className="col-md-6">
-                <label className="form-label">依頼額</label>
+                <label className="form-label">供給額</label>
                 <div className="input-group">
                   <input
                     type="text"
@@ -151,6 +152,16 @@ class Admin extends Component {
                 </div>
               </div>
             </div>
+            <div className="row mt-3">
+              <div className="col-12">
+                <label className="form-label">供給タイプ</label>
+                <select type="text" className="form-control" id="payment_type">
+                  <option value="outsource">仕事発注</option>
+                  <option value="prize">企画賞品</option>
+                </select>
+              </div>
+            </div>
+
             <div className="row mt-3">
               <div className="col-12">
                 <label className="form-label">案件</label>

@@ -92,3 +92,6 @@ a{
 .card.social-unlinked:hover{
     opacity:1;
 }
+#ranking-image tr:hover{
+    background-color:white!important;
+}

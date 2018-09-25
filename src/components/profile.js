@@ -10,7 +10,6 @@ class Profile extends Component {
   constructor(props) {
     super(props)
   }
-
   reservePayment() {
     let { amount_aht, unpaid_aht, last_payment } = this.getAmounts()
     let address

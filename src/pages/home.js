@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import Helmet from 'react-helmet'
-
+import Helmet from '../components/helmet'
 import url from 'url'
 import querystring from 'querystring'
 
@@ -79,7 +78,11 @@ class Home extends Component {
         )
       }
     }
-    this.auth = new auth(this, { redirect: true, oauth: this.state.oauth })
+    this.auth = new auth(this, {
+      redirect: true,
+      oauth: this.state.oauth,
+      adminPayment: true,
+    })
   }
   componentDidUpdate() {
     window
@@ -117,26 +120,16 @@ class Home extends Component {
     let body =
       this.state.isUser === undefined ? <Loading /> : this.render_dashboard()
     let nav_links = [
-      { name: 'ALISランキング', href: '/rankings/alis/' },
-      { name: 'note企画', href: '/rankings/note/' },
+      { name: 'トークン', href: '/token/supply/' },
+      { name: 'whoami', href: '/whoami/' },
+      { name: 'ALIS', href: '/rankings/alis/' },
+      { name: 'note', href: '/rankings/note/' },
+      { name: '企画', href: '/rankings/note/?tag=alis' },
     ]
 
     return (
       <Layout>
-        <Helmet
-          link={[
-            {
-              rel: 'stylesheet',
-              type: 'text/css',
-              href: '/tabler/css/tabler.min.css',
-            },
-            {
-              rel: 'stylesheet',
-              type: 'text/css',
-              href: '/css/common.css',
-            },
-          ]}
-        />
+        <Helmet title="ALIS HackerToken || ALISハッカー部" desc="" />
         <Header_Home
           links={nav_links}
           auth={this.auth}

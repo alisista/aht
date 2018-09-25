@@ -64,7 +64,18 @@ class Auth {
       })
     }
   }
-
+  searchTweeple(user_id, cb, err) {
+    this.db
+      .collection('tweeple')
+      .doc(user_id)
+      .get()
+      .then(ss => {
+        cb(ss)
+      })
+      .catch(e => {
+        err(e)
+      })
+  }
   // users
   setData(value, cb, err) {
     if (err == undefined) {
@@ -227,8 +238,17 @@ class Auth {
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
-          if (this.component.state.user.id === process.env.ADMIN_TWITTER_ID) {
+          if (
+            this.component.state.user.id === process.env.ADMIN_TWITTER_ID &&
+            this.opts.adminPayment === true
+          ) {
             this.getAdminPayment()
+          }
+          if (
+            this.component.state.user.id === process.env.ADMIN_TWITTER_ID &&
+            this.opts.adminReport === true
+          ) {
+            this.getAdminReport()
           }
         })
       })
@@ -282,8 +302,23 @@ class Auth {
         history = _(history).sortBy(v => {
           return v.date * -1
         })
-        console.log(history)
         this.component.setState({ admin_history: history }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+  getAdminReport() {
+    this.db
+      .collection('report')
+      .get()
+      .then(ss => {
+        let reports = {}
+        ss.forEach(doc => {
+          let report = doc.data()
+          reports[report.alis] = report.twitter
+        })
+        this.component.setState({ reports: reports }, () => {})
       })
       .catch(e => {
         console.log(e)
@@ -320,8 +355,6 @@ class Auth {
       }
     }
     delete missions.join.revoke
-    console.log(missions)
-
     this.setUserInfo('missions', missions, () => {
       this.component.alerts.pushAlert(
         `重複アカウントによるタスクを取り消しました。別アカウントで再トライして下さい！`,
@@ -350,12 +383,13 @@ class Auth {
       }
     )
   }
-  makePayment(to, amount, what_for) {
+  makePayment(to, amount, what_for, type) {
     this.genRandomValue(random_value => {
       console.log(to)
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/payment/`,
         {
+          type: type,
           random_value: random_value,
           uid: this.component.state.user.uid,
           twitter_id: this.component.state.user.id,
@@ -462,6 +496,121 @@ class Auth {
           ),
           cancel_text: '確認',
         })
+      })
+  }
+  getAllCandidates() {
+    this.db
+      .collection('twitter_candidates')
+      .get()
+      .then(res => {
+        let candidates = []
+        res.forEach(ss => {
+          let obj = ss.data()
+          candidates.push({ alis: ss.id, candidates: obj })
+        })
+        this.component.setState({ allCandidates: candidates })
+      })
+  }
+  chooseCandidate(alis, screen_name, search_component) {
+    let candidates
+    let allCandidates = search_component.state.allCandidates
+    for (let v of allCandidates) {
+      if (v.alis == alis) {
+        for (let k in v.candidates || {}) {
+          if (k.toLowerCase() == screen_name.toLowerCase()) {
+            v.candidates[k].checked = true
+          } else {
+            delete v.candidates[k].checked
+          }
+        }
+        candidates = v.candidates
+        break
+      }
+    }
+
+    this.db
+      .collection('twitter_candidates')
+      .doc(alis)
+      .set(candidates)
+      .then(() => {
+        search_component.setState({ allCandidates: allCandidates })
+      })
+  }
+  existsTweeple(screen_name, cb) {
+    this.db
+      .collection('tweeple')
+      .where('screen_name_lower', '==', screen_name.toLowerCase())
+      .limit(1)
+      .get()
+      .then(ss => {
+        let exists = false
+        ss.forEach(() => {
+          exists = true
+        })
+        cb(exists)
+      })
+      .catch(e => {
+        cb(false)
+      })
+  }
+  addCandidate(screen_name, alis_user, search_component) {
+    let candidates = search_component.state.candidates || []
+    this.db
+      .collection('twitter_candidates')
+      .doc(alis_user.user_id)
+      .set(
+        {
+          [`$profile`]: alis_user,
+          [`${screen_name}`]: {
+            date: Date.now(),
+            uid: this.component.state.user.uid,
+          },
+        },
+        { merge: true }
+      )
+      .then(() => {
+        candidates.push(screen_name)
+        search_component.setState({ candidates: candidates })
+        this.component.alerts.pushAlert(
+          `登録しました！確認後リストに追加されますのでしばしお待ち下さい。`,
+          'success'
+        )
+      })
+      .catch(error => {
+        this.component.showModal(modals.error_general)
+      })
+  }
+  getCandidates(alis_user, search_component) {
+    this.db
+      .collection('twitter_candidates')
+      .doc(alis_user)
+      .get()
+      .then(ss => {
+        let accounts = []
+        if (ss.exists) {
+          let candidates = ss.data()
+          for (let k in candidates) {
+            if (k !== '$profile') {
+              accounts.push(k)
+            }
+          }
+          search_component.setState({ candidates: accounts })
+        }
+      })
+  }
+  reportError(user) {
+    const doc_id = `${this.component.state.user.uid}_${Date.now()}`
+    this.db
+      .collection('report')
+      .doc(doc_id)
+      .set({ twitter: user.id_str, alis: user.user_id })
+      .then(() => {
+        let reports = this.component.state.reports || {}
+        reports[user.user_id] = user.id_str
+        this.component.setState({ reports: reports })
+      })
+      .catch(error => {
+        this.component.showModal(modals.error_general)
       })
   }
   unlink_github() {
