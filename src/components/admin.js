@@ -204,10 +204,13 @@ class Admin extends Component {
         history_html.push(
           <tr>
             <td style={{ whiteSpace: 'nowrap' }}>
-              {moment(v.date).format('M月D日')}
+              {moment(v.date).format('M/D')}
             </td>
-            <td>
-              <b className="text-primary">{v.amount}</b> AHT
+            <td style={{ whiteSpace: 'nowrap' }}>
+              <b className="text-primary">{v.amount}</b>{' '}
+              <span className="text-muted" style={{ fontSize: '12px' }}>
+                AHT
+              </span>
             </td>
             <td>{v.reason || `ALISハッカー部に入部`}</td>
             <td style={{ width: '32px', paddingRight: '0px' }}>
@@ -241,7 +244,7 @@ class Admin extends Component {
             <table className="table card-table table-striped table-vcenter">
               <thead>
                 <tr>
-                  <th>支払日</th>
+                  <th style={{ whiteSpace: 'nowrap' }}>支払日</th>
                   <th style={{ whiteSpace: 'nowrap' }}>トークン額</th>
                   <th style={{ whiteSpace: 'nowrap' }}>案件</th>
                   <th style={{ whiteSpace: 'nowrap' }} colSpan="2">

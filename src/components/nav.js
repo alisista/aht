@@ -128,6 +128,11 @@ class Nav extends Component {
                   ランキング
                 </a>
               </li>
+              <li className="nav-item">
+                <a className="nav-link js-scroll-trigger" href="/magazines/">
+                  公式マガジン
+                </a>
+              </li>
               {login_btn}
             </ul>
           </div>

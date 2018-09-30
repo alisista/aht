@@ -85,10 +85,12 @@ class Profile extends Component {
       this.props.serverInfo.amount != undefined &&
       this.props.serverInfo.amount.aht != undefined
     ) {
-      amount_aht = this.props.serverInfo.amount.aht.earned
-      unpaid_aht =
-        this.props.serverInfo.amount.aht.earned -
-        this.props.serverInfo.amount.aht.paid
+      const AHT = this.props.serverInfo.amount.aht
+      const divider = 10000000000
+      amount_aht = AHT.earned
+      let earned = AHT.earned + (AHT.tipped || 0)
+      let paid = AHT.paid + (AHT.tip || 0)
+      unpaid_aht = Math.round((earned - paid) * divider) / divider
     }
     let payment = this.props.payment || []
     if (payment[0] != undefined && payment[0].status == 'requested') {

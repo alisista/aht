@@ -47,9 +47,8 @@ class Holders extends ComponentP {
     const nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'whoami', href: '/whoami/' },
-      { name: 'ALIS', href: '/rankings/alis/' },
-      { name: 'note', href: '/rankings/note/' },
       { name: '企画', href: '/rankings/note/?tag=alis' },
+      { name: '公式マガジン', href: '/magazines/' },
     ]
 
     const nav_links_sub = [

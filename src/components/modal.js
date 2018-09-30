@@ -13,12 +13,15 @@ class Modal extends Component {
     if (this.props.modal.exec != undefined) {
       btn_exec = (
         <button
+          id="modal_exec_btn"
           type="button"
-          className="btn btn-danger"
+          className={`btn btn-${this.props.modal.exec_color || 'danger'}`}
           onClick={() => {
-            window.$('#pageModal').modal('hide')
+            if (!window.$('#modal_exec_btn').hasClass('btn-gray') === true) {
+              window.$('#pageModal').modal('hide')
 
-            this.props.modal.exec()
+              this.props.modal.exec()
+            }
           }}
         >
           {this.props.modal.exec_text || '実行'}

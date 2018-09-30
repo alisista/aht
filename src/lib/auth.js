@@ -7,6 +7,15 @@ import _ from 'underscore'
 // firestore
 require('firebase/firestore')
 const modals = {
+  error_exists: {
+    title: (
+      <div>
+        <i className="text-danger fas fa-ban" /> 認証エラー！
+      </div>
+    ),
+    body: 'そのアカウントは既に他のユーザーに使われています。',
+    cancel_text: '確認',
+  },
   error_account_removal: {
     title: (
       <div>
@@ -233,8 +242,12 @@ class Auth {
         let userInfo = ss.data() || {}
         this.component.setState({ userInfo: userInfo }, () => {
           this.getServerInfo(user)
-          this.getUserHistory(user)
-          this.getUserPayment(user)
+          this.getUserTip(user)
+          if (this.opts.magazine !== true) {
+            this.getUserHistory(user)
+            this.getUserPayment(user)
+            this.getUserArticles(user)
+          }
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
@@ -289,10 +302,186 @@ class Auth {
         console.log(e)
       })
   }
+  getUserTip(user) {
+    this.db
+      .collection('users')
+      .doc(user.uid)
+      .collection('tip')
+      .get()
+      .then(ss => {
+        let tip = []
+        ss.forEach(doc => {
+          tip.push(doc.data())
+        })
+        tip = _(tip).sortBy(v => {
+          return v.date * -1
+        })
+        this.component.setState({ tip_history: tip }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+
+  listArticles() {
+    let uid = this.component.state.user.uid
+    window.$.get(
+      `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/list/articles/${uid}/${
+        this.component.state.serverInfo.alis.user_id
+      }`,
+      json => {
+        if (json.error != null) {
+          this.component.showModal(modals.error_general)
+        } else {
+          this.component.setState({ magazinArticles: json.articles }, () => {
+            console.log('lets go fuckin get..' + uid)
+            this.getUserMagazineArticles()
+          })
+        }
+      }
+    )
+  }
+  getUserMagazineArticles() {
+    this.db
+      .collection('users_server')
+      .doc(this.component.state.user.uid)
+      .collection('magazine_articles')
+      .get()
+      .then(ss => {
+        let articles = {}
+        ss.forEach(doc => {
+          console.log(doc.data())
+          articles[doc.id] = doc.data()
+        })
+        this.component.setState({ userArticles: articles }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+  publishArticle(article) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/upload/article/`,
+        {
+          random_value: random_value,
+          article: JSON.stringify(article),
+          uid: this.component.state.user.uid,
+          mid: 'admin',
+        },
+        json => {
+          console.log(json)
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            this.component.showModal({
+              title: (
+                <div>
+                  <i className="text-green fas fa-check" /> 投稿しました！
+                </div>
+              ),
+              body: `${article.title}をハッカーマガジンに投稿しました！`,
+              cancel_text: '確認',
+            })
+            this.getUserMagazineArticles()
+          }
+        }
+      )
+    })
+  }
+  unpublishArticle(article) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/unpublish/article/`,
+        {
+          random_value: random_value,
+          article: JSON.stringify(article),
+          uid: this.component.state.user.uid,
+          mid: 'admin',
+        },
+        json => {
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            console.log(json)
+            this.component.showModal({
+              title: (
+                <div>
+                  <i className="text-green fas fa-check" />{' '}
+                  投稿を取り下げしました！
+                </div>
+              ),
+              body: `${article.title}をハッカーマガジンから取り下げました！`,
+              cancel_text: '確認',
+            })
+            this.getUserMagazineArticles()
+          }
+        }
+      )
+    })
+  }
+  tip(amount, article) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/tip/`,
+        {
+          random_value: random_value,
+          article: JSON.stringify(article),
+          uid: this.component.state.user.uid,
+          amount: amount,
+        },
+        json => {
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            this.component.showModal({
+              title: (
+                <div>
+                  <i className="text-green fas fa-check" /> 投げ銭完了！
+                </div>
+              ),
+              body: (
+                <div>
+                  『{article.title}
+                  』に <b className="text-primary">{amount}</b>
+                  AHT投げ銭しました！
+                </div>
+              ),
+              cancel_text: '確認',
+            })
+            this.getServerInfo(this.component.state.user)
+            this.getUserTip(this.component.state.user)
+          }
+        }
+      )
+    })
+  }
+  getUserArticles(user) {
+    this.db
+      .collection('users')
+      .doc(user.uid)
+      .collection('articles')
+      .get()
+      .then(ss => {
+        let articles = []
+        ss.forEach(doc => {
+          articles.push(doc.data())
+        })
+        articles = _(articles).sortBy(v => {
+          return v.published_at * -1
+        })
+        console.log(articles)
+        this.component.setState({ articles: articles }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+
   getAdminPayment() {
     this.db
       .collection('history')
-      .where('type', '==', 'outsource')
+      .where('payment_from', '==', 'admin')
       .get()
       .then(ss => {
         let history = []
@@ -345,7 +534,29 @@ class Auth {
         console.log(e)
       })
   }
-
+  authenticateAlisUser(token) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/auth/alis/`,
+        {
+          random_value: random_value,
+          token: token,
+          uid: this.component.state.user.uid,
+        },
+        json => {
+          if (json.error != null) {
+            if (json.error === 4) {
+              this.component.showModal(modals.error_exists)
+            } else {
+              this.component.showModal(modals.error_general)
+            }
+          } else {
+            this.getUserInfo(this.component.state.user)
+          }
+        }
+      )
+    })
+  }
   retry() {
     let missions = this.component.state.userInfo.missions
     let revoke = missions.join.revoke
@@ -385,7 +596,6 @@ class Auth {
   }
   makePayment(to, amount, what_for, type) {
     this.genRandomValue(random_value => {
-      console.log(to)
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/payment/`,
         {
@@ -401,6 +611,7 @@ class Auth {
         },
         json => {
           if (json.error != null) {
+            console.log(json)
             this.component.showModal(modals.error_general)
           } else {
             this.getUserInfo(this.component.state.user)
@@ -439,15 +650,7 @@ class Auth {
         this.setUser(result.user)
       })
       .catch(error => {
-        this.component.showModal({
-          title: (
-            <div>
-              <i className="text-danger fas fa-ban" /> 認証エラー！
-            </div>
-          ),
-          body: 'そのアカウントは既に他のユーザーに使われています。',
-          cancel_text: '確認',
-        })
+        this.component.showModal(modals.error_exists)
       })
   }
   registerPayment(amount, address) {
@@ -628,6 +831,29 @@ class Auth {
     this.genRandomValue(random_value => {
       fetch(
         `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/remove/discord/${
+          this.component.state.user.uid
+        }/${random_value}/`,
+        {
+          method: 'POST',
+        }
+      )
+        .then(res => res.json())
+        .then(json => {
+          if (json.error == undefined) {
+            this.getServerInfo(this.component.state.user)
+          } else {
+            this.component.showModal(modals.error_account_removal)
+          }
+        })
+        .catch(() => {
+          this.component.showModal(modals.error_account_removal)
+        })
+    })
+  }
+  unlink_alis() {
+    this.genRandomValue(random_value => {
+      fetch(
+        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/remove/alis/${
           this.component.state.user.uid
         }/${random_value}/`,
         {

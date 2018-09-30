@@ -21,11 +21,8 @@ class HTML extends Component {
   render() {
     let nav_items = [
       { name: '幻想', id: 'vision' },
-      { name: '問題', id: 'problems' },
-      { name: '戦略', id: 'strategy' },
       { name: '道筋', id: 'roadmap' },
       { name: '部員', id: 'members' },
-      { name: '提携', id: 'partnerships' },
       { name: 'トークン', id: 'token' },
     ]
     let visions = [

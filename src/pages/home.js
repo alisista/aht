@@ -12,11 +12,14 @@ import Footer from '../components/footer'
 import Modal from '../components/modal'
 import Loading from '../components/loading'
 import Header_Home from '../components/header_home'
+import Subheader from '../components/subheader'
 import Waves from '../components/waves'
+import Articles from '../components/articles'
 import Alert from '../components/alert'
 import Social_Links from '../components/social_links'
 import Missions from '../components/missions'
 import History from '../components/history'
+import Tip_History from '../components/tip_history'
 import Payment from '../components/payment'
 import Profile from '../components/profile'
 import Admin from '../components/admin'
@@ -55,9 +58,12 @@ class Home extends Component {
       ],
     }
     this.state = {
+      articles: [],
+      tab: 'home',
       serverInfo: {},
       userInfo: {},
       history: [],
+      tip_history: [],
       admin_history: [],
       payment: [],
       error: error,
@@ -122,11 +128,21 @@ class Home extends Component {
     let nav_links = [
       { name: 'トークン', href: '/token/supply/' },
       { name: 'whoami', href: '/whoami/' },
-      { name: 'ALIS', href: '/rankings/alis/' },
-      { name: 'note', href: '/rankings/note/' },
-      { name: '企画', href: '/rankings/note/?tag=alis' },
+      { name: 'ランキング', href: '/rankings/alis/' },
+      { name: '公式マガジン', href: '/magazines/' },
     ]
 
+    const nav_links_sub = [
+      { name: 'ホーム', key: 'home', icon: 'home' },
+      { name: '入部', key: 'mission', icon: 'door-open' },
+      { name: 'WAVESウォレット', key: 'waves', icon: 'wallet' },
+    ]
+    if (
+      this.state.serverInfo != undefined &&
+      this.state.serverInfo.alis != undefined
+    ) {
+      nav_links_sub.push({ name: 'ALIS記事', key: 'alis', icon: 'bookmark' })
+    }
     return (
       <Layout>
         <Helmet title="ALIS HackerToken || ALISハッカー部" desc="" />
@@ -135,6 +151,11 @@ class Home extends Component {
           auth={this.auth}
           user={this.state.user}
           serverInfo={this.state.serverInfo}
+        />
+        <Subheader
+          items={nav_links_sub}
+          location={this.props.location}
+          component={this}
         />
         <div className="my-3 my-md-5">
           <div className="container">
@@ -148,71 +169,122 @@ class Home extends Component {
     )
   }
   render_dashboard() {
-    return [
-      <Waves
-        showModal={this.showModal}
-        user={this.state.user}
-        userInfo={this.state.userInfo}
-        auth={this.auth}
-      />,
-      <div className="row">
-        <div className="col-lg-4">
-          <Profile
-            user={this.state.user}
-            payment={this.state.payment}
-            serverInfo={this.state.serverInfo}
-            userInfo={this.state.userInfo}
-            payment={this.state.payment}
-            showModal={this.showModal}
-            auth={this.auth}
-          />
-          <Social_Links
-            auth={this.auth}
-            user={this.state.user}
-            social_links={this.state.social_links}
-            serverInfo={this.state.serverInfo}
-            showModal={this.showModal}
-            userInfo={this.state.userInfo}
-          />
+    let tab = this.state.tab
+    if (this.state.tab === 'waves') {
+      return (
+        <Waves
+          showModal={this.showModal}
+          user={this.state.user}
+          userInfo={this.state.userInfo}
+          auth={this.auth}
+        />
+      )
+    } else {
+      let right_column
+      if (this.state.tab === 'mission') {
+        right_column = (
+          <div className="col-lg-8">
+            <Missions
+              component={this}
+              history={this.state.history}
+              auth={this.auth}
+              showModal={this.showModal}
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+              social_links={this.state.social_links}
+            />
+          </div>
+        )
+      } else if (this.state.tab === 'home') {
+        right_column = (
+          <div className="col-lg-8">
+            <History
+              component={this}
+              history={this.state.history}
+              auth={this.auth}
+              showModal={this.showModal}
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+            />
+            <Payment
+              component={this}
+              payment={this.state.payment}
+              auth={this.auth}
+              showModal={this.showModal}
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+            />
+            <Tip_History
+              component={this}
+              tip_history={this.state.tip_history}
+              auth={this.auth}
+              showModal={this.showModal}
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+            />
+
+            <Admin
+              user={this.state.user}
+              history={this.state.admin_history}
+              showModal={this.showModal}
+              auth={this.auth}
+            />
+          </div>
+        )
+      } else if (this.state.tab == 'alis') {
+        right_column = (
+          <div className="col-lg-8">
+            <History
+              filter={['reward']}
+              component={this}
+              history={this.state.history}
+              auth={this.auth}
+              showModal={this.showModal}
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+            />
+            <Articles
+              userInfo={this.state.userInfo}
+              serverInfo={this.state.serverInfo}
+              showModal={this.showModal}
+              articles={this.state.articles}
+              magazinArticles={this.state.magazinArticles}
+              userArticles={this.state.userArticles}
+              auth={this.auth}
+            />
+          </div>
+        )
+      }
+      return (
+        <div className="row">
+          <div className="col-lg-4">
+            <Profile
+              user={this.state.user}
+              payment={this.state.payment}
+              serverInfo={this.state.serverInfo}
+              userInfo={this.state.userInfo}
+              payment={this.state.payment}
+              showModal={this.showModal}
+              auth={this.auth}
+            />
+            <Social_Links
+              auth={this.auth}
+              user={this.state.user}
+              social_links={this.state.social_links}
+              serverInfo={this.state.serverInfo}
+              showModal={this.showModal}
+              userInfo={this.state.userInfo}
+            />
+          </div>
+          {right_column}
         </div>
-        <div className="col-lg-8">
-          <Missions
-            component={this}
-            history={this.state.history}
-            auth={this.auth}
-            showModal={this.showModal}
-            user={this.state.user}
-            userInfo={this.state.userInfo}
-            serverInfo={this.state.serverInfo}
-            social_links={this.state.social_links}
-          />
-          <History
-            component={this}
-            history={this.state.history}
-            auth={this.auth}
-            showModal={this.showModal}
-            user={this.state.user}
-            userInfo={this.state.userInfo}
-            serverInfo={this.state.serverInfo}
-          />
-          <Payment
-            component={this}
-            payment={this.state.payment}
-            auth={this.auth}
-            showModal={this.showModal}
-            user={this.state.user}
-            userInfo={this.state.userInfo}
-            serverInfo={this.state.serverInfo}
-          />
-          <Admin
-            user={this.state.user}
-            history={this.state.admin_history}
-            showModal={this.showModal}
-            auth={this.auth}
-          />
-        </div>
-      </div>,
-    ]
+      )
+    }
   }
 }
 

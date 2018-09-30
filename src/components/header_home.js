@@ -7,13 +7,19 @@ class Header_Home extends Component {
   render() {
     let user
     if (this.props.user != undefined) {
-      let aht = '0.00000000'
+      let aht = 0
+      let hold = 0
       if (
         this.props.serverInfo != undefined &&
         this.props.serverInfo.amount != undefined &&
         this.props.serverInfo.amount.aht != undefined
       ) {
-        aht = `${this.props.serverInfo.amount.aht.earned}.00000000`
+        const AHT = this.props.serverInfo.amount.aht
+        const divider = 10000000000
+        aht = `${AHT.earned}`
+        let earned = AHT.earned + (AHT.tipped || 0)
+        let paid = AHT.paid + (AHT.tip || 0)
+        hold = Math.round((earned - paid) * divider) / divider
       }
       if (this.props.user != undefined && this.props.user.linkTo == undefined) {
         user = (
@@ -33,7 +39,8 @@ class Header_Home extends Component {
                 {this.props.user.displayName}
               </span>
               <small className="text-muted d-block mt-1">
-                {this.props.user.overrideText || `${aht} AHT`}
+                {this.props.user.overrideText ||
+                  `${hold} AHT 保 / ${aht} AHT 獲`}
               </small>
             </span>
           </a>

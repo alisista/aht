@@ -17,6 +17,33 @@ class Social_Links extends Component {
   link_github() {
     this.props.auth.link_github()
   }
+  link_alis() {
+    this.props.showModal({
+      title: (
+        <div>
+          <i className="text-warning fas fa-exclamation-triangle" />{' '}
+          トークン入力
+        </div>
+      ),
+      body: (
+        <div>
+          <p>
+            ALISのユーザーアカウントを認証するためにご自分でAPIから『id_token』を入手して以下のボックスに入力して下さい。
+          </p>
+          <textarea
+            placeholder="アクセストークン"
+            id="access_token"
+            className="form-control"
+          />
+        </div>
+      ),
+      exec_text: '確認',
+      exec: () => {
+        let token = window.$('#access_token').val()
+        this.props.auth.authenticateAlisUser(token)
+      },
+    })
+  }
   unlink_twitter() {
     this.props.showModal({
       title: (
@@ -32,6 +59,28 @@ class Social_Links extends Component {
   }
   unlink_github() {
     this.unlink_social({ key: 'github', mission_no: '4' })
+  }
+  unlink_alis() {
+    this.props.showModal({
+      title: (
+        <div>
+          <i className="text-danger fas fa-exclamation-triangle" />{' '}
+          取り消し確認！
+        </div>
+      ),
+      body: (
+        <p>
+          本当に
+          <span className="text-capitalize">ALIS</span>
+          アカウントを取り消してよろしいですか？今後ALIS記事に対してAHTが支給されなくなります。
+        </p>
+      ),
+      cancel_text: 'キャンセル',
+      exec_text: '実行',
+      exec: () => {
+        this.props.auth.unlink_alis()
+      },
+    })
   }
   unlink_social(opts = {}) {
     this.props.showModal({
@@ -106,7 +155,13 @@ class Social_Links extends Component {
         func_link: 'link_github',
         func_unlink: 'unlink_github',
       },
-      { type: 'alis', name: 'ALIS', color: 'purple' },
+      {
+        type: 'alis',
+        name: 'ALIS',
+        color: 'purple',
+        func_link: 'link_alis',
+        func_unlink: 'unlink_alis',
+      },
     ]
     let social_links_html = []
     social_links.forEach(v => {
@@ -116,7 +171,9 @@ class Social_Links extends Component {
         this.props.serverInfo != undefined &&
         this.props.serverInfo[v.type] != undefined
       ) {
-        v.displayName = this.props.serverInfo[v.type].id
+        v.displayName =
+          this.props.serverInfo[v.type].id ||
+          this.props.serverInfo[v.type].user_id
       }
       let icon
       if (v.type === 'alis') {
@@ -137,12 +194,8 @@ class Social_Links extends Component {
       let className = 'social-linked'
       let link_func = () => {}
       if (v.displayName == undefined) {
-        if (v.type == 'alis') {
-          v.displayName = <div>この機能は準備中です</div>
-        } else {
-          v.displayName = <div>アカウントをリンクする</div>
-          link_func = this[v.func_link]
-        }
+        v.displayName = <div>アカウントをリンクする</div>
+        link_func = this[v.func_link]
         className = 'social-unlinked'
         v.color = 'gray'
       } else if (v.func_unlink != undefined) {

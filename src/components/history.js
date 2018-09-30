@@ -14,15 +14,40 @@ class History extends Component {
     } else {
       let history_html = []
       this.props.history.forEach(v => {
-        history_html.push(
-          <tr>
-            <td>{moment(v.date).format('M月D日')}</td>
-            <td>
-              <b className="text-primary">{v.amount}</b> AHT
-            </td>
-            <td>{v.reason || `ALISハッカー部に入部`}</td>
-          </tr>
-        )
+        if (
+          this.props.filter == undefined ||
+          this.props.filter.includes(v.type)
+        ) {
+          let reason = v.reason || `ALISハッカー部に入部`
+          if (v.type === 'tip') {
+            reason = (
+              <div>
+                投げ錢 『
+                <a
+                  target="_blank"
+                  href={`https://alis.to/${v.article.user_id}/articles/${
+                    v.article.article_id
+                  }`}
+                >
+                  {v.article.title}
+                </a>
+                』
+              </div>
+            )
+          }
+          history_html.push(
+            <tr>
+              <td>{moment(v.date).format('M/D')}</td>
+              <td style={{ whiteSpace: 'nowrap' }}>
+                <b className="text-primary">{v.amount}</b>{' '}
+                <span className="text-muted" style={{ fontSize: '12px' }}>
+                  AHT
+                </span>
+              </td>
+              <td>{reason}</td>
+            </tr>
+          )
+        }
       })
       return (
         <div className="card">
@@ -38,8 +63,8 @@ class History extends Component {
             <table className="table card-table table-striped table-vcenter">
               <thead>
                 <tr>
-                  <th>獲得日</th>
-                  <th>トークン額</th>
+                  <th style={{ whiteSpace: 'nowrap' }}>獲得日</th>
+                  <th style={{ whiteSpace: 'nowrap' }}>トークン額</th>
                   <th style={{ whiteSpace: 'nowrap' }}>獲得事由</th>
                 </tr>
               </thead>

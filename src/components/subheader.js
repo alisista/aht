@@ -7,22 +7,44 @@ class Subheader extends Component {
   render() {
     let items_html = []
     for (let v of this.props.items) {
-      let active = ''
-      let pathname = this.props.location.pathname.toLowerCase()
-      if (v.active || pathname === v.href) {
-        active = 'active'
-      }
       let icon
       if (v.icon != undefined) {
         icon = <i className={`mr-2 ${v.fa_type || 'fa'} fa-${v.icon}`} />
       }
-      let href = v.href
-      items_html.push(
-        <li className="nav-item" key={`topic-${v.key || 'all'}`}>
+      let a
+      if (v.href != undefined) {
+        let active = ''
+        let pathname = this.props.location.pathname.toLowerCase()
+        if (v.active || pathname === v.href) {
+          active = 'active'
+        }
+        let href = v.href
+        a = (
           <a href={href} className={`nav-link ${active}`}>
             {icon}
             {v.name}
           </a>
+        )
+      } else {
+        let active = ''
+        if (v.key === this.props.component.state.tab) {
+          active = 'active'
+        }
+        a = (
+          <a
+            onClick={() => {
+              this.props.component.setState({ tab: v.key })
+            }}
+            className={`nav-link ${active}`}
+          >
+            {icon}
+            {v.name}
+          </a>
+        )
+      }
+      items_html.push(
+        <li className="nav-item" key={`topic-${v.key || 'all'}`}>
+          {a}
         </li>
       )
     }

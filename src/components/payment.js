@@ -29,7 +29,7 @@ class Payment extends Component {
         } else if (v.sent_at != undefined) {
           sent = (
             <a href={`https://wavesexplorer.com/tx/${v.tx}`} target="_blank">
-              {moment(v.sent_at).format('M月D日 HH:mm')}
+              {moment(v.sent_at).format('M/D HH:mm')}
             </a>
           )
         }
@@ -51,9 +51,12 @@ class Payment extends Component {
         }
         payment_html.push(
           <tr style={payment_style}>
-            <td>{moment(v.date).format('M月D日 HH:mm')}</td>
+            <td>{moment(v.date).format('M/D HH:mm')}</td>
             <td>
-              <b className="text-primary">{v.amount}</b> AHT
+              <b className="text-primary">{v.amount}</b>{' '}
+              <span className="text-muted" style={{ fontSize: '12px' }}>
+                AHT
+              </span>
             </td>
             <td>{sent}</td>
             <td>{confirmation}</td>
@@ -74,7 +77,7 @@ class Payment extends Component {
             <table className="table card-table table-striped table-vcenter">
               <thead>
                 <tr>
-                  <th>申請日</th>
+                  <th style={{ whiteSpace: 'nowrap' }}>申請日</th>
                   <th>トークン額</th>
                   <th style={{ whiteSpace: 'nowrap' }}>送信日（取引詳細）</th>
                   <th style={{ whiteSpace: 'nowrap' }}>完了確認</th>
