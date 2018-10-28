@@ -185,6 +185,12 @@ class Home extends Component {
     let topics = [
       { key: null, name: '総合', icon: 'font' },
       { key: 'crypto', name: 'クリプト', icon: 'ethereum', fa_type: 'fab' },
+      {
+        key: 'illustration-comic',
+        name: 'マンガ・イラスト',
+        icon: 'smile',
+      },
+      { key: 'business', name: 'ビジネス', icon: 'user-tie' },
       { key: 'gourmet', name: 'グルメ', icon: 'birthday-cake' },
       { key: 'gosyuin', name: '御朱印', icon: 'cannabis' },
     ]
@@ -785,6 +791,9 @@ class Home extends Component {
     let runnerups = []
     let index = 0
     for (let article of articles) {
+      if (article.g != undefined && topics[article.g] == undefined) {
+        topics[article.g] = { name: article.g, color: `info` }
+      }
       if (this.state.tag === 'alis' && this.state.target === 'note') {
         if (rankers[article.u] == undefined) {
           rankers[article.u] = {
@@ -1054,16 +1063,21 @@ class Home extends Component {
       gosyuin: { name: '御朱印', color: `danger` },
       manga: { name: 'マンガ', color: `success` },
       column: { name: 'コラム', color: `primary` },
+      [`illustration-comic`]: { name: `イラスト・マンガ`, color: 'warning' },
       novel: { name: '小説', color: `warning` },
       photo: { name: '写真', color: `info` },
       music: { name: 'サウンド', color: `success` },
-      business: { name: 'ビジネス', color: `primary` },
-      lifestyle: { name: 'ライフスタイル', color: `info` },
+      business: { name: 'ビジネス', color: `info` },
+      lifestyle: { name: 'ライフスタイル', color: `primary` },
       tech: { name: 'テクノロジー', color: `danger` },
       entertainment: { name: 'エンタメ', color: `success` },
     }
     let rankers = {}
     for (let article of articles) {
+      if (article.g != undefined && topics[article.g] == undefined) {
+        topics[article.g] = { name: article.g, color: `info` }
+      }
+
       if (this.state.tag === 'alis' && this.state.target === 'note') {
         if (rankers[article.u] == undefined) {
           rankers[article.u] = {
