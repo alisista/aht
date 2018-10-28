@@ -152,6 +152,7 @@ class Home extends Component {
       const topic_names = {
         all: '総合',
         crypto: 'クリプト',
+        ['illustration-comic']: 'マンガ・イラスト',
         gourmet: 'グルメ',
         gosyuin: '御朱印',
         manga: 'マンガ',
@@ -521,7 +522,7 @@ class Home extends Component {
       }
       if (article.m != undefined) {
         price = (
-          <div className="d-none d-md-inline-block" style={{ width: '60px' }}>
+          <div className="d-none d-md-inline-block" style={{ width: '80px' }}>
             <span className={`badge badge-default bg-teal text-light`}>
               {article.m} 円
             </span>
@@ -840,7 +841,7 @@ class Home extends Component {
       }
       if (article.m != undefined) {
         price = (
-          <div className="d-none d-md-inline-block" style={{ width: '60px' }}>
+          <div className="d-none d-md-inline-block" style={{ width: '80px' }}>
             <span className={`badge badge-default bg-teal text-light`}>
               {article.m} 円
             </span>
@@ -1122,7 +1123,7 @@ class Home extends Component {
       }
       if (article.m != undefined) {
         price = (
-          <div className="d-none d-md-inline-block" style={{ width: '60px' }}>
+          <div className="d-none d-md-inline-block" style={{ width: '80px' }}>
             <span className={`badge badge-default bg-teal text-light`}>
               {article.m} 円
             </span>
@@ -1138,7 +1139,7 @@ class Home extends Component {
           </div>
         )
         topic_small = (
-          <div className="d-none d-md-inline-block" style={{ width: '60px' }}>
+          <div className="d-none d-md-inline-block" style={{ width: '80px' }}>
             <span className={`badge badge-${topics[article.g].color}`}>
               {topics[article.g].name}
             </span>
