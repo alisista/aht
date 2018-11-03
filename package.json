@@ -1,11 +1,9 @@
 {
-  "name": "gatsby-starter-default",
-  "description": "Gatsby default starter",
+  "name": "aht",
   "version": "1.0.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
   "dependencies": {
     "@waves/waves-api": "^1.4.0",
-    "firebase": "4.13.0",
+    "firebase": "^5.5.7",
     "gatsby": "next",
     "gatsby-plugin-react-helmet": "next",
     "moment-timezone": "^0.5.21",
