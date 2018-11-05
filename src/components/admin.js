@@ -3,7 +3,7 @@ import _ from 'underscore'
 import moment from 'moment-timezone'
 import 'moment/locale/ja'
 moment.locale('ja')
-
+let prefix = process.env.FIREBASE_PROJECT_NAME
 class Admin extends Component {
   constructor(props) {
     super(props)
@@ -13,7 +13,7 @@ class Admin extends Component {
     }
   }
   order() {
-    fetch(`${process.env.BACKEND_SERVER_ORIGIN}/alishackers/users/list/`)
+    fetch(`${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/users/list/`)
       .then(res => res.json())
       .then(json => {
         this.setState({ ordering: true, users: json.users })
@@ -46,6 +46,16 @@ class Admin extends Component {
           </div>
         ),
         body: '案件の依頼先を選択してください。',
+        cancel_text: '確認',
+      })
+    } else if (type === 'faucet' && (0 >= amount || 100 < amount)) {
+      this.props.showModal({
+        title: (
+          <div>
+            <i className="text-danger fas fa-ban" /> 入力エラー！
+          </div>
+        ),
+        body: '100以下の数字を入力して下さい。',
         cancel_text: '確認',
       })
     } else if (_.isNaN(amount) == true || 0 >= amount || 10000 < amount) {
@@ -86,15 +96,47 @@ class Admin extends Component {
     }
   }
   render() {
-    if (this.props.user.id !== process.env.ADMIN_TWITTER_ID) {
+    if (
+      this.props.user.id !== process.env.ADMIN_TWITTER_ID &&
+      process.env.WAVES_NETWORK !== 'TESTNET'
+    ) {
       return null
     } else {
+      let disabled = ''
+      let supply_title = 'お仕事発注履歴'
+      let supply_label = '発注'
+      let payment_label = '支払い'
+      let token_amount = 'トークン額'
+      let supply_options = []
+      if (process.env.WAVES_NETWORK === 'TESTNET') {
+        supply_options.push(<option value="faucet">フォーセット</option>)
+        supply_title = 'フォーセット'
+        supply_label = '供給'
+        payment_label = '供給'
+        if (this.props.user.id !== process.env.ADMIN_TWITTER_ID) {
+          disabled = 'disabled'
+          token_amount = '100AHTまで'
+        }
+      }
+      if (this.props.user.id === process.env.ADMIN_TWITTER_ID) {
+        supply_options.push(<option value="outsource">仕事発注</option>)
+        supply_options.push(<option value="prize">企画賞品</option>)
+      }
+
       let orderForm
       if (this.state.ordering === true) {
         let users = []
         for (let v of this.state.users) {
-          users.push(<option value={v.uid}>{v.displayName}</option>)
+          if (
+            process.env.WAVES_NETWORK !== 'TESTNET' ||
+            this.props.user.id === process.env.ADMIN_TWITTER_ID ||
+            v.uid === this.props.user.uid
+          ) {
+            users.push(<option value={v.uid}>{v.displayName}</option>)
+          }
         }
+        let supply_to = [users]
+        supply_to.unshift(<option value="">供給先を選択してください</option>)
         let userImage
         let imgURL =
           'https://abs.twimg.com/sticky/default_profile_images/default_profile_200x200.png'
@@ -127,8 +169,7 @@ class Admin extends Component {
                       this.selectUser()
                     }}
                   >
-                    <option value="">供給先を選択してください</option>
-                    {users}
+                    {supply_to}
                   </select>
                   <span className="input-group-append">
                     <span className="input-group-text" style={{ padding: 0 }}>
@@ -143,7 +184,7 @@ class Admin extends Component {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="トークン額"
+                    placeholder={token_amount}
                     id="token_amount"
                   />
                   <span className="input-group-append">
@@ -155,9 +196,13 @@ class Admin extends Component {
             <div className="row mt-3">
               <div className="col-12">
                 <label className="form-label">供給タイプ</label>
-                <select type="text" className="form-control" id="payment_type">
-                  <option value="outsource">仕事発注</option>
-                  <option value="prize">企画賞品</option>
+                <select
+                  disabled={disabled}
+                  type="text"
+                  className="form-control"
+                  id="payment_type"
+                >
+                  {supply_options}
                 </select>
               </div>
             </div>
@@ -180,7 +225,7 @@ class Admin extends Component {
                         this.makePayment()
                       }}
                     >
-                      支払い
+                      {payment_label}
                     </button>
                   </span>
                 </div>
@@ -220,7 +265,6 @@ class Admin extends Component {
           </tr>
         )
       })
-
       return (
         <div className="card">
           <div className="card-header">
@@ -228,14 +272,14 @@ class Admin extends Component {
               <span className={`stamp stamp-sm bg-purple mr-3`}>
                 <i className="fas fa-paper-plane" />
               </span>
-              お仕事発注履歴{' '}
+              {supply_title}{' '}
               <button
                 className="ml-3 btn btn-sm btn-purple"
                 onClick={() => {
                   this.order()
                 }}
               >
-                発注
+                {supply_label}
               </button>
             </h4>
           </div>

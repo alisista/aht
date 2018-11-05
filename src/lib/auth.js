@@ -3,6 +3,7 @@ import firebase from 'firebase'
 import uuidv4 from 'uuid/v4'
 import url from 'url'
 import _ from 'underscore'
+let prefix = process.env.FIREBASE_PROJECT_NAME
 
 // firestore
 require('firebase/firestore')
@@ -46,14 +47,18 @@ const config = {
   timestampsInSnapshots: true,
 }
 firebase.initializeApp(config)
-
+console.log(config)
 class Auth {
   constructor(component, opts = {}) {
     this.opts = opts
     this.component = component
     if (typeof window !== 'undefined') {
       const WavesAPI = require('@waves/waves-api')
-      this.Waves = WavesAPI.create(WavesAPI.MAINNET_CONFIG)
+      let network = WavesAPI.MAINNET_CONFIG
+      if (process.env.WAVES_NETWORK === 'TESTNET') {
+        network = WavesAPI.TESTNET_CONFIG
+      }
+      this.Waves = WavesAPI.create(network)
       this.db = firebase.firestore()
       this.provider = new firebase.auth.TwitterAuthProvider()
       this.provider_github = new firebase.auth.GithubAuthProvider()
@@ -326,7 +331,7 @@ class Auth {
   listArticles() {
     let uid = this.component.state.user.uid
     window.$.get(
-      `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/list/articles/${uid}/${
+      `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/list/articles/${uid}/${
         this.component.state.serverInfo.alis.user_id
       }`,
       json => {
@@ -362,7 +367,7 @@ class Auth {
   publishArticle(article) {
     this.genRandomValue(random_value => {
       window.$.post(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/upload/article/`,
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/upload/article/`,
         {
           random_value: random_value,
           article: JSON.stringify(article),
@@ -392,7 +397,7 @@ class Auth {
   unpublishArticle(article) {
     this.genRandomValue(random_value => {
       window.$.post(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/unpublish/article/`,
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/unpublish/article/`,
         {
           random_value: random_value,
           article: JSON.stringify(article),
@@ -423,7 +428,7 @@ class Auth {
   tip(amount, article) {
     this.genRandomValue(random_value => {
       window.$.post(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/tip/`,
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/tip/`,
         {
           random_value: random_value,
           article: JSON.stringify(article),
@@ -470,7 +475,6 @@ class Auth {
         articles = _(articles).sortBy(v => {
           return v.published_at * -1
         })
-        console.log(articles)
         this.component.setState({ articles: articles }, () => {})
       })
       .catch(e => {
@@ -537,7 +541,7 @@ class Auth {
   authenticateAlisUser(token) {
     this.genRandomValue(random_value => {
       window.$.post(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/auth/alis/`,
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/auth/alis/`,
         {
           random_value: random_value,
           token: token,
@@ -597,7 +601,7 @@ class Auth {
   makePayment(to, amount, what_for, type) {
     this.genRandomValue(random_value => {
       window.$.post(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/payment/`,
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/payment/`,
         {
           type: type,
           random_value: random_value,
@@ -636,7 +640,7 @@ class Auth {
     this.genRandomValue(random_value => {
       let oauth_url = `https://discordapp.com/api/oauth2/authorize?client_id=486270221825474562&redirect_uri=${encodeURIComponent(
         process.env.BACKEND_SERVER_ORIGIN
-      )}%2Foauth%2Fdiscord&response_type=code&scope=guilds%20identify%20messages.read&state=${random_value}_${
+      )}%2F${prefix}%2Foauth%2Fdiscord&response_type=code&scope=guilds%20identify%20messages.read&state=${random_value}_${
         this.component.state.user.uid
       }`
       window.location.href = oauth_url
@@ -650,6 +654,7 @@ class Auth {
         this.setUser(result.user)
       })
       .catch(error => {
+        console.log(error)
         this.component.showModal(modals.error_exists)
       })
   }
@@ -830,7 +835,7 @@ class Auth {
   unlink_discord() {
     this.genRandomValue(random_value => {
       fetch(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/remove/discord/${
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/remove/discord/${
           this.component.state.user.uid
         }/${random_value}/`,
         {
@@ -853,7 +858,7 @@ class Auth {
   unlink_alis() {
     this.genRandomValue(random_value => {
       fetch(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/remove/alis/${
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/remove/alis/${
           this.component.state.user.uid
         }/${random_value}/`,
         {
@@ -901,8 +906,9 @@ class Auth {
   validateWavesAddress(popup_url) {
     const redirectedUrl = popup_url
     const parsedUrl = url.parse(redirectedUrl, true)
+    /* WAVES is not returning d parameter at the moment */
     const signedData = parsedUrl.query.d
-
+    console.log(signedData)
     /* 
        todo: need to verify signature, but the current code on the demo page is not working!!
        https://demo.wavesplatform.com/
@@ -910,10 +916,16 @@ class Auth {
     const signature = parsedUrl.query.s
     const publicKey = parsedUrl.query.p
     const address = parsedUrl.query.a
-    const [random_value, uid] = signedData.split('_')
+    let random_value, uid
+    if (parsedUrl.query.d != undefined) {
+      ;[random_value, uid] = signedData.split('_')
+    }
+    console.log(address)
+    console.log(this.Waves.crypto.isValidAddress(address))
     if (
-      uid != this.component.state.user.uid ||
-      random_value != this.component.state.userInfo.random_value ||
+      (signedData != undefined && uid != this.component.state.user.uid) ||
+      (signedData != undefined &&
+        random_value != this.component.state.userInfo.random_value) ||
       this.Waves.crypto.isValidAddress(address) == false
     ) {
       this.component.alerts.pushAlert(

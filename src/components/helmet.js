@@ -7,8 +7,15 @@ class COMMON_HELMET extends Component {
     super(props)
   }
   render() {
+    let site_title = 'ALISハッカー部'
+    let subdomain = ''
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+      subdomain = 'testnet.'
+    }
+
     let metas = []
-    let title = this.props.title || `404ページ | ALISハッカー部`
+    let title = this.props.title || `404ページ | ${site_title}`
     let desc =
       this.props.desc ||
       '史上初！マミぃさんに300AHTお支払いで描いていただいたハッカー部のイラストです。'
@@ -16,14 +23,14 @@ class COMMON_HELMET extends Component {
     metas.push({ name: 'twitter:site', content: '@alishackers' })
     metas.push({
       name: 'twitter:image',
-      content: 'https://alishackers.club' + image_404,
+      content: `https://${subdomain}alishackers.club${image_404}`,
     })
     metas.push({ name: 'twitter:description', content: desc })
     metas.push({ name: 'twitter:title', content: title })
     metas.push({ name: 'og:title', content: title })
     metas.push({
       name: 'og:image',
-      content: 'https://alishackers.club' + image_404,
+      content: `https://${subdomain}alishackers.club${image_404}`,
     })
     metas.push({ name: 'og:description', content: desc })
     metas.push({ name: 'description', content: desc })

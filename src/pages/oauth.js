@@ -16,10 +16,11 @@ class HTML extends Component {
     if (parsedUrl.query.noredirect == '1') {
       noredirect = true
     }
+    /* WAVES is not returning d parameter at the moment */
     if (
       parsedUrl.query.a != undefined &&
       parsedUrl.query.s != undefined &&
-      parsedUrl.query.d != undefined &&
+      //parsedUrl.query.d != undefined &&
       parsedUrl.query.p != undefined
     ) {
       redirect = props.location.origin + '/home/' + props.location.search

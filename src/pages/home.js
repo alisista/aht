@@ -103,6 +103,10 @@ class Home extends Component {
   }
 
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     let alerts = this.state.alerts || []
     let alert_html = []
     alerts.forEach((v, i) => {
@@ -143,10 +147,12 @@ class Home extends Component {
     ) {
       nav_links_sub.push({ name: 'ALIS記事', key: 'alis', icon: 'bookmark' })
     }
+
     return (
       <Layout>
-        <Helmet title="ALIS HackerToken || ALISハッカー部" desc="" />
+        <Helmet title={`ALIS HackerToken | ${site_title}`} desc="" />
         <Header_Home
+          payment={this.state.payment}
           links={nav_links}
           auth={this.auth}
           user={this.state.user}

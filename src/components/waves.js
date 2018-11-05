@@ -14,12 +14,15 @@ class Waves extends Component {
     super(props)
   }
   confirmRemoval(k) {
-    console.log(this.props)
     this.props.auth.removeWavesAddress(k)
   }
   addWaves() {
     this.props.auth.genRandomValue(random_value => {
-      let waves_url = `https://client.wavesplatform.com#gateway/auth?r=https://${
+      let waves_network = 'client'
+      if (process.env.WAVES_NETWORK === 'TESTNET') {
+        waves_network = 'testnet'
+      }
+      let waves_url = `https://${waves_network}.wavesplatform.com#gateway/auth?r=https://${
         process.env.WAVES_REDIRECT
       }/&n=ALIS HackerToken&i=/img/alis_hackers.png&s=//oauth&d=${random_value}_${
         this.props.user.uid
@@ -92,13 +95,19 @@ class Waves extends Component {
             />
           )
         }
+        let testnet = ''
+        if (process.env.WAVES_NETWORK === 'TESTNET') {
+          testnet = 'testnet.'
+        }
         addresses_html.push(
           <tr>
             <td>{receiver}</td>
             <td style={{ wordBreak: 'break-all' }}>
               <b>
                 <a
-                  href={`https://wavesexplorer.com/address/${v.address}`}
+                  href={`https://${testnet}wavesexplorer.com/address/${
+                    v.address
+                  }`}
                   target="_blank"
                 >
                   {v.address}

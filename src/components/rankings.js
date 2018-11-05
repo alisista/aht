@@ -170,6 +170,10 @@ class Home extends Component {
     }
   }
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     let conf = this.state.conf || {}
     let alerts = this.state.alerts || []
     const date = this.state.date
@@ -315,7 +319,7 @@ class Home extends Component {
     let meta = []
     const title = `${conf.name}デイリーランキング ${moment(
       this.state.date
-    ).format('M月D日（ddd）')}| ALISハッカー部`
+    ).format('M月D日（ddd）')}| ${site_title}`
     const desc = `${moment(this.state.ndate).format(
       'YYYY年 MM月DD日 （ddd）'
     )}にTwitterで話題になった${conf.name}記事のランキングです。`

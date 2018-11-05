@@ -61,6 +61,10 @@ class Magazine extends ComponentP {
   }
 
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     let alerts = this.state.alerts || []
     let alert_html = []
     alerts.forEach((v, i) => {
@@ -95,8 +99,9 @@ class Magazine extends ComponentP {
     ]
     return (
       <Layout>
-        <Helmet title="HACKER's CLUB MAGAZINE | ALISハッカー部" desc="" />
+        <Helmet title={`HACKER's CLUB MAGAZINE | ${site_title}`} desc="" />
         <Header_Home
+          payment={this.state.payment}
           links={nav_links}
           auth={this.auth}
           user={this.state.user}

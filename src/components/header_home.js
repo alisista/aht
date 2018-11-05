@@ -5,6 +5,10 @@ class Header_Home extends Component {
     super(props)
   }
   render() {
+    let site_title = "ALIS Hacker's Club"
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     let user
     if (this.props.user != undefined) {
       let aht = 0
@@ -20,6 +24,10 @@ class Header_Home extends Component {
         let earned = AHT.earned + (AHT.tipped || 0)
         let paid = AHT.paid + (AHT.tip || 0)
         hold = Math.round((earned - paid) * divider) / divider
+        let payment = this.props.payment || []
+        if (payment[0] != undefined && payment[0].status == 'requested') {
+          hold -= payment[0].amount
+        }
       }
       if (this.props.user != undefined && this.props.user.linkTo == undefined) {
         user = (
@@ -126,7 +134,7 @@ class Header_Home extends Component {
             <div className="container">
               <div className="d-flex">
                 <a className="header-brand" href="/">
-                  {this.props.title || `ALIS Hacker's Club`}
+                  {this.props.title || site_title}
                 </a>
                 <div className="d-flex order-lg-2 ml-auto">
                   {links}

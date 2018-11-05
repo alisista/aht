@@ -120,6 +120,11 @@ class Who extends Component {
     })
   }
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
+
     let topics = [
       { key: 'confirmed', name: 'リスト', icon: 'twitter', fa_type: 'fab' },
       { key: 'search', name: '検索', icon: 'search' },
@@ -163,7 +168,7 @@ class Who extends Component {
 
     return (
       <Layout>
-        <Helmet title="ALIS HackerToken || ALISハッカー部" desc="" />
+        <Helmet title={`ALIS HackerToken || ${site_title}`} desc="" />
         <Header_Home
           links={nav_links}
           auth={this.auth}

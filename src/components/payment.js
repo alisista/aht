@@ -9,6 +9,10 @@ class Payment extends Component {
     this.state = {}
   }
   render() {
+    let waves_network = ''
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      waves_network = 'testnet.'
+    }
     if ((this.props.payment || []).length == 0) {
       return null
     } else {
@@ -28,7 +32,10 @@ class Payment extends Component {
           }
         } else if (v.sent_at != undefined) {
           sent = (
-            <a href={`https://wavesexplorer.com/tx/${v.tx}`} target="_blank">
+            <a
+              href={`https://${waves_network}wavesexplorer.com/tx/${v.tx}`}
+              target="_blank"
+            >
               {moment(v.sent_at).format('M/D HH:mm')}
             </a>
           )
@@ -36,7 +43,9 @@ class Payment extends Component {
         if (v.status == 'confirmed') {
           confirmation = (
             <a
-              href={`https://wavesexplorer.com/blocks/${v.block}`}
+              href={`https://${waves_network}wavesexplorer.com/blocks/${
+                v.block
+              }`}
               target="_blank"
             >
               <i className="fa fa-check text-success" /> {v.block}

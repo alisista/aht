@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import _ from 'underscore'
 import moment from 'moment-timezone'
 import 'moment/locale/ja'
-
+let prefix = process.env.FIREBASE_PROJECT_NAME
 const modals = {
   error_too_short: {
     title: (
@@ -140,7 +140,7 @@ class Missions extends Component {
     } else {
       this.isChecking(3, () => {
         fetch(
-          `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/check/discord/${
+          `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/check/discord/${
             this.props.user.uid
           }/${this.props.serverInfo.discord.id}`
         )
@@ -189,7 +189,7 @@ class Missions extends Component {
   checkFollowing() {
     this.isChecking(2, () => {
       fetch(
-        `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/check/following/` +
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/check/following/` +
           this.props.user.id
       )
         .then(d => d.json())

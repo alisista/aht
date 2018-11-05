@@ -21,7 +21,10 @@ class Profile extends Component {
         address = k
       }
     }
-    if (Date.now() - last_payment < 1000 * 60 * 60 * 24 * 7) {
+    if (
+      process.env.WAVES_NETWORK !== 'TESTNET' &&
+      Date.now() - last_payment < 1000 * 60 * 60 * 24 * 7
+    ) {
       this.props.showModal({
         title: (
           <div>

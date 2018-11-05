@@ -6,6 +6,7 @@ import 'moment/locale/ja'
 import fa_alis from '../assets/images/fa-alis.png'
 import image_alishackers from '../assets/images/alishackers_twitter.jpeg'
 moment.locale('ja')
+let prefix = process.env.FIREBASE_PROJECT_NAME
 const modals = {
   error_general: {
     title: (
@@ -200,7 +201,7 @@ class Profile extends Component {
   }
   search(user_id) {
     fetch(
-      `${process.env.BACKEND_SERVER_ORIGIN}/alishackers/get_user/${user_id}`,
+      `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/get_user/${user_id}`,
       {
         method: 'GET',
       }

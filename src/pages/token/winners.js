@@ -44,6 +44,10 @@ class Holders extends ComponentP {
 
   componentDidUpdate() {}
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     const nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'whoami', href: '/whoami/' },
@@ -250,7 +254,7 @@ class Holders extends ComponentP {
     return (
       <Layout>
         <Helmet
-          title="AHT獲得者一覧 | ALISハッカー部"
+          title={`AHT獲得者一覧 | ${site_title}`}
           desc="AHTの獲得者一覧です"
         />
         <Header_Home links={nav_links} />

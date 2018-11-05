@@ -96,6 +96,10 @@ class Nav extends Component {
         </li>
       )
     }
+    let site_title = `ALIS Hacker' Club`
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
     return (
       <nav
         className="navbar navbar-expand-lg navbar-dark fixed-top"
@@ -103,7 +107,7 @@ class Nav extends Component {
       >
         <div className="container">
           <a className="navbar-brand js-scroll-trigger" href="#page-top">
-            ALIS Hacker's Club
+            {site_title}
           </a>
           <button
             className="navbar-toggler navbar-toggler-right"

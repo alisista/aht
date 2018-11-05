@@ -44,6 +44,13 @@ class Supply extends ComponentP {
 
   componentDidUpdate() {}
   render() {
+    let waves_network = ''
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+      waves_network = 'testnet.'
+    }
+
     const nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'whoami', href: '/whoami/' },
@@ -188,7 +195,9 @@ class Supply extends ComponentP {
                       style={{ whiteSpace: 'nowrap', width: '250px' }}
                     >
                       <a
-                        href="https://wavesexplorer.com/tx/4PHPY8YjFKzRTfMtiMYGLL4VBdUGMhF45VxZNnT6K7fL"
+                        href={`https://${waves_network}wavesexplorer.com/tx/${
+                          process.env.ASSET_ID
+                        }`}
                         target="_blank"
                       >
                         <img
@@ -204,7 +213,9 @@ class Supply extends ComponentP {
                       style={{}}
                     >
                       <a
-                        href="https://wavesexplorer.com/tx/4PHPY8YjFKzRTfMtiMYGLL4VBdUGMhF45VxZNnT6K7fL"
+                        href={`https://${waves_network}wavesexplorer.com/tx/${
+                          process.env.ASSET_ID
+                        }`}
                         target="_blank"
                       >
                         <b>ALIS HackerToken</b>
@@ -268,7 +279,10 @@ class Supply extends ComponentP {
 
     return (
       <Layout>
-        <Helmet title="AHT供給ログ | ALISハッカー部" desc="AHTの供給履歴です" />
+        <Helmet
+          title={`AHT供給ログ | ${site_title}`}
+          desc="AHTの供給履歴です"
+        />
         <Header_Home links={nav_links} />
         <Subheader items={nav_links_sub} location={this.props.location} />
         <div className="my-3 my-md-5">

@@ -18,7 +18,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "deploy": "gatsby build && gh-pages -d public -b master",
+    "deploy": "gatsby build && echo 'alishackers.club' > public/CNAME && gh-pages -d public -b master",
+    "deploy-testnet": "gatsby build && echo 'testnet.alishackers.club' > public/CNAME && gh-pages -d public -o testnet",    
     "build": "gatsby build",
     "develop": "gatsby develop",
     "format": "prettier --write '**/*.js'",

@@ -14,11 +14,17 @@ import Footer from '../components/footer'
 
 import alis_hackers from '../assets/images/alis_hackers.png'
 import alis_supporters from '../assets/images/alis_supporters.png'
+
 class HTML extends Component {
   constructor(props) {
     super(props)
   }
   render() {
+    let site_title = 'ALISハッカー部'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      site_title = 'AHT TESTNET'
+    }
+
     let nav_items = [
       { name: '幻想', id: 'vision' },
       { name: '道筋', id: 'roadmap' },
@@ -315,7 +321,7 @@ class HTML extends Component {
     return (
       <Layout>
         <Helmet
-          title="ALIS HackerToken | ALISハッカー部"
+          title={`ALIS HackerToken | ${site_title}`}
           desc="法定通貨に依存しない完全独自経済圏を目指す分散型開発者グループ"
           links={['/css/agency.css', '/css/common.css']}
         />
