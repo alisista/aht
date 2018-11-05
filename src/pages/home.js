@@ -38,7 +38,7 @@ class Home extends Component {
     if (
       parsedUrl.query.a != undefined &&
       parsedUrl.query.s != undefined &&
-      parsedUrl.query.d != undefined &&
+      //parsedUrl.query.d != undefined &&
       parsedUrl.query.p != undefined
     ) {
       redirect = props.location.origin + '/home/' + props.location.search
