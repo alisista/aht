@@ -29,6 +29,9 @@ class Header_Home extends Component {
           hold -= payment[0].amount
         }
       }
+      const divider = 100000000
+      hold = Math.round(hold * divider) / divider
+      aht = Math.round(aht * divider) / divider
       if (this.props.user != undefined && this.props.user.linkTo == undefined) {
         user = (
           <a

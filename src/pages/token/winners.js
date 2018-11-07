@@ -44,15 +44,19 @@ class Holders extends ComponentP {
 
   componentDidUpdate() {}
   render() {
+    let waves_network = ''
+
     let site_title = 'ALISハッカー部'
     if (process.env.WAVES_NETWORK === 'TESTNET') {
       site_title = 'AHT TESTNET'
+      waves_network = 'testnet.'
     }
     const nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'whoami', href: '/whoami/' },
       { name: '企画', href: '/rankings/note/?tag=alis' },
-      { name: '公式マガジン', href: '/magazines/' },
+      { name: 'ランキング', href: '/rangings/alis/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
 
     const nav_links_sub = [
@@ -178,7 +182,9 @@ class Holders extends ComponentP {
                       style={{ whiteSpace: 'nowrap', width: '250px' }}
                     >
                       <a
-                        href="https://wavesexplorer.com/tx/4PHPY8YjFKzRTfMtiMYGLL4VBdUGMhF45VxZNnT6K7fL"
+                        href={`https://${waves_network}wavesexplorer.com/tx/${
+                          process.env.ASSET_ID
+                        }`}
                         target="_blank"
                       >
                         <img
@@ -194,7 +200,9 @@ class Holders extends ComponentP {
                       style={{}}
                     >
                       <a
-                        href="https://wavesexplorer.com/tx/4PHPY8YjFKzRTfMtiMYGLL4VBdUGMhF45VxZNnT6K7fL"
+                        href={`https://${waves_network}wavesexplorer.com/tx/${
+                          process.env.ASSET_ID
+                        }`}
                         target="_blank"
                       >
                         <b>ALIS HackerToken</b>

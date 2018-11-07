@@ -10,6 +10,7 @@
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-helmet": "^5.2.0",
+    "shortid": "^2.2.14",
     "underscore": "^1.9.1",
     "uuid": "^3.3.2"
   },
@@ -19,7 +20,7 @@
   "license": "MIT",
   "scripts": {
     "deploy": "gatsby build && echo 'alishackers.club' > public/CNAME && gh-pages -d public -b master",
-    "deploy-testnet": "gatsby build && echo 'testnet.alishackers.club' > public/CNAME && gh-pages -d public -o testnet",    
+    "deploy-testnet": "gatsby build && echo 'testnet.alishackers.club' > public/CNAME && gh-pages -d public -o testnet",
     "build": "gatsby build",
     "develop": "gatsby develop",
     "format": "prettier --write '**/*.js'",

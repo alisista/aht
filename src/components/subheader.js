@@ -33,7 +33,11 @@ class Subheader extends Component {
         a = (
           <a
             onClick={() => {
-              this.props.component.setState({ tab: v.key })
+              this.props.component.setState({ tab: v.key }, () => {
+                if (v.func != undefined) {
+                  v.func()
+                }
+              })
             }}
             className={`nav-link ${active}`}
           >

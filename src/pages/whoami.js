@@ -163,7 +163,7 @@ class Who extends Component {
       { name: 'ホーム', href: '/home/' },
       { name: 'トークン', href: '/token/supply/' },
       { name: 'ランキング', href: '/rankings/alis/' },
-      { name: '公式マガジン', href: '/magazines/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
 
     return (

@@ -185,7 +185,7 @@ class Home extends Component {
       { name: 'トークン', href: '/token/supply/' },
       { name: 'whoami', href: '/whoami/' },
       { name: 'ランキング', href: '/rankings/alis/' },
-      { name: '公式マガジン', href: '/magazines/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
     let topics = [
       { key: null, name: '総合', icon: 'font' },

@@ -102,6 +102,10 @@ class Profile extends Component {
     if (payment[0] != undefined) {
       last_payment = payment[0].date
     }
+    const divider = 100000000
+    amount_aht = Math.round(amount_aht * divider) / divider
+    unpaid_aht = Math.round(unpaid_aht * divider) / divider
+
     return {
       amount_aht: amount_aht,
       unpaid_aht: unpaid_aht,

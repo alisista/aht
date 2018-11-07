@@ -252,6 +252,7 @@ class Auth {
             this.getUserHistory(user)
             this.getUserPayment(user)
             this.getUserArticles(user)
+            this.getUserMagazines()
           }
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
@@ -328,19 +329,31 @@ class Auth {
       })
   }
 
-  listArticles() {
+  listArticles(LastEvaluatedKey) {
     let uid = this.component.state.user.uid
-    window.$.get(
+    window.$.post(
       `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/list/articles/${uid}/${
         this.component.state.serverInfo.alis.user_id
       }`,
+      { LastEvaluatedKey: LastEvaluatedKey },
       json => {
         if (json.error != null) {
           this.component.showModal(modals.error_general)
         } else {
-          this.component.setState({ magazinArticles: json.articles }, () => {
-            console.log('lets go fuckin get..' + uid)
-            this.getUserMagazineArticles()
+          let magazineArticles = (
+            this.component.state.magazineArticles || []
+          ).concat(json.articles)
+          let newstate = {
+            articles_page: json.LastEvaluatedKey,
+            magazineArticles: magazineArticles,
+          }
+          if (json.articles.length == 0 || json.LastEvaluatedKey == undefined) {
+            newstate.nomore_articles = true
+          }
+          this.component.setState(newstate, () => {
+            if (LastEvaluatedKey == undefined) {
+              this.getUserMagazineArticles()
+            }
           })
         }
       }
@@ -364,7 +377,26 @@ class Auth {
         console.log(e)
       })
   }
-  publishArticle(article) {
+  getUserMagazines() {
+    this.db
+      .collection('users_server')
+      .doc(this.component.state.user.uid)
+      .collection('magazines')
+      .get()
+      .then(ss => {
+        let magazines = []
+        ss.forEach(doc => {
+          magazines.push(doc.data())
+        })
+
+        this.component.setState({ userMagazines: magazines }, () => {})
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
+
+  publishArticle(article, magazine_id) {
     this.genRandomValue(random_value => {
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/upload/article/`,
@@ -372,7 +404,7 @@ class Auth {
           random_value: random_value,
           article: JSON.stringify(article),
           uid: this.component.state.user.uid,
-          mid: 'admin',
+          mid: magazine_id,
         },
         json => {
           console.log(json)
@@ -385,7 +417,7 @@ class Auth {
                   <i className="text-green fas fa-check" /> 投稿しました！
                 </div>
               ),
-              body: `${article.title}をハッカーマガジンに投稿しました！`,
+              body: `${article.title}をマガジンに投稿しました！`,
               cancel_text: '確認',
             })
             this.getUserMagazineArticles()
@@ -394,7 +426,7 @@ class Auth {
       )
     })
   }
-  unpublishArticle(article) {
+  unpublishArticle(article, magazine_id) {
     this.genRandomValue(random_value => {
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/unpublish/article/`,
@@ -402,7 +434,7 @@ class Auth {
           random_value: random_value,
           article: JSON.stringify(article),
           uid: this.component.state.user.uid,
-          mid: 'admin',
+          mid: magazine_id,
         },
         json => {
           if (json.error != null) {
@@ -416,7 +448,7 @@ class Auth {
                   投稿を取り下げしました！
                 </div>
               ),
-              body: `${article.title}をハッカーマガジンから取り下げました！`,
+              body: `${article.title}をマガジンから取り下げました！`,
               cancel_text: '確認',
             })
             this.getUserMagazineArticles()
@@ -425,7 +457,7 @@ class Auth {
       )
     })
   }
-  tip(amount, article) {
+  tip(amount, article, magazine_id) {
     this.genRandomValue(random_value => {
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/tip/`,
@@ -433,6 +465,7 @@ class Auth {
           random_value: random_value,
           article: JSON.stringify(article),
           uid: this.component.state.user.uid,
+          magazine_id: magazine_id,
           amount: amount,
         },
         json => {
@@ -831,6 +864,99 @@ class Auth {
       .catch(error => {
         this.component.showModal(modals.error_account_removal)
       })
+  }
+  getMagazine() {
+    console.log(this.component.state)
+    this.db
+      .collection('magazines')
+      .doc(this.component.state.magazine_id)
+      .get()
+      .then(ss => {
+        if (ss.exists) {
+          this.component.setState({ magazine: ss.data() })
+        }
+      })
+  }
+  deleteMagazine(magazine) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/magazine/delete/${
+          this.component.state.user.uid
+        }/${random_value}/`,
+        magazine,
+        async json => {
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            magazine.deleted = Date.now()
+            this.component.setState(
+              {
+                magazine: magazine,
+                updated: Date.now(),
+              },
+              () => {
+                this.component.showModal({
+                  title: (
+                    <div>
+                      <i className="text-success fas fa-check" /> 削除完了！
+                    </div>
+                  ),
+                  body: 'マガジンを削除しました。',
+                  cancel_text: '確認',
+                })
+              }
+            )
+          }
+        }
+      )
+    })
+  }
+  issueMagazine(magazine) {
+    this.genRandomValue(random_value => {
+      window.$.post(
+        `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/magazine/issue/${
+          this.component.state.user.uid
+        }/${random_value}/`,
+        magazine,
+        async json => {
+          if (json.error != null) {
+            this.component.showModal(modals.error_general)
+          } else {
+            if (magazine.is_edit) {
+              this.component.setState(
+                {
+                  magazine: magazine,
+                  updated: Date.now(),
+                },
+                () => {
+                  this.component.showModal({
+                    title: (
+                      <div>
+                        <i className="text-success fas fa-check" /> 設定変更！
+                      </div>
+                    ),
+                    body:
+                      'マガジンの設定を変更しました。変更が反映されるまで最大で1時間程かかります。',
+                    cancel_text: '確認',
+                  })
+                }
+              )
+            } else {
+              this.component.showModal({
+                title: (
+                  <div>
+                    <i className="text-success fas fa-check" /> マガジン発刊！
+                  </div>
+                ),
+                body: `新マガジン『${magazine.title}』を発刊しました！`,
+                cancel_text: '確認',
+              })
+            }
+            this.getUserMagazines()
+          }
+        }
+      )
+    })
   }
   unlink_discord() {
     this.genRandomValue(random_value => {

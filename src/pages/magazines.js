@@ -13,6 +13,9 @@ import Footer from '../components/footer'
 import Modal from '../components/modal'
 import Loading from '../components/loading'
 import Header_Home from '../components/header_home'
+import Subheader from '../components/subheader'
+import Post_Magazine from '../components/post_magazine'
+import Issue_Magazine from '../components/issue_magazine'
 import Alert from '../components/alert'
 import auth from '../lib/auth'
 import alerts from '../lib/alerts'
@@ -24,8 +27,9 @@ class Magazine extends ComponentP {
   constructor(props) {
     super(props)
     let page = (this.params.page || 1) * 1
-    let magazine_id = this.params.id || 'admin'
+    let magazine_id = this.params.id || 'top'
     this.state = {
+      tab: 'articles',
       tip: 0,
       page: page,
       magazine_id: magazine_id,
@@ -36,16 +40,108 @@ class Magazine extends ComponentP {
     }
     this.alerts = new alerts(this, { magazine: true })
   }
-
+  is_editor() {
+    return (
+      this.is_admin() ||
+      ((this.state.magazine_id !== 'admin' &&
+        (this.state.magazine != undefined &&
+          this.state.magazine.editors === 'anyone' &&
+          this.state.serverInfo != undefined &&
+          this.state.serverInfo.alis != undefined)) ||
+        (this.state.serverInfo != undefined &&
+          this.state.serverInfo.alis != undefined &&
+          this.state.userInfo != undefined &&
+          this.state.userInfo.missions != undefined &&
+          this.state.userInfo.missions.join != undefined &&
+          this.state.userInfo.missions.join.confirmed != undefined &&
+          this.state.userInfo.missions.join.confirmed != false))
+    )
+  }
+  is_admin() {
+    return (
+      this.state.magazine_id !== 'admin' &&
+      this.state.magazine != undefined &&
+      this.state.user != undefined &&
+      this.state.magazine.owner === this.state.user.uid
+    )
+  }
+  async getMagazines() {
+    let magazine_id = process.env.MAP_ID_MAGAZINES_TOP
+    try {
+      let map = await this.getJSOND(magazine_id, 'magazines')
+      if (map.maps != undefined && map.maps[this.state.page] != undefined) {
+        let json = await this.getJSOND(
+          map.maps[this.state.page],
+          this.state.page
+        )
+        await this.set({
+          magazine_articles: json.magazines,
+          len: json.len,
+        })
+      } else {
+        await this.set({ noMagazine: true })
+      }
+    } catch (e) {
+      await this.set({ noMagazine: true })
+    }
+  }
+  async getMagazine_Articles() {
+    let magazine_id = process.env.MAP_ID_MAGAZINES
+    if (this.state.magazine_id !== 'admin') {
+      magazine_id = this.state.magazine_id
+    }
+    let map
+    try {
+      map = await this.getJSOND(magazine_id, 'magazines')
+      if (
+        this.state.magazine_id === 'admin' &&
+        map.maps[this.state.magazine_id][this.state.page] != undefined
+      ) {
+        let json = await this.getJSOND(
+          map.maps[this.state.magazine_id][this.state.page],
+          this.state.page
+        )
+        await this.set({ magazine_articles: json.articles, len: json.len })
+      } else if (
+        map.maps != undefined &&
+        map.maps.map[this.state.page] != undefined
+      ) {
+        let json = await this.getJSOND(
+          map.maps.map[this.state.page],
+          this.state.page
+        )
+        await this.setState({
+          magazine: map.maps,
+          magazine_articles: json.articles,
+          len: json.len,
+        })
+        this.checkMagazine()
+      } else {
+        await this.set({ magazine: map, magazine_articles: [] })
+        this.checkMagazine()
+      }
+    } catch (e) {
+      console.log(e)
+      await this.set({ noMagazine: true })
+    }
+  }
   async componentDidMount() {
     this.auth = new auth(this, {})
-    let map = await this.getJSOND(process.env.MAP_ID_MAGAZINES, 'magazines')
-    if (map.maps[this.state.magazine_id][this.state.page] != undefined) {
-      let json = await this.getJSOND(
-        map.maps[this.state.magazine_id][this.state.page],
-        this.state.page
-      )
-      await this.set({ magazine_articles: json.articles, len: json.len })
+    if (this.state.magazine_id === 'top') {
+      await this.getMagazines()
+    } else {
+      await this.getMagazine_Articles()
+    }
+  }
+  checkMagazine() {
+    if (this.state.user == undefined) {
+      setTimeout(() => {
+        this.checkMagazine()
+      }, 500)
+    } else {
+      if (this.is_admin()) {
+        this.auth.getMagazine()
+      }
     }
   }
   componentDidUpdate() {
@@ -59,8 +155,47 @@ class Magazine extends ComponentP {
       window.$('#pageModal').modal({})
     })
   }
-
+  getMagazineTitle(is_html) {
+    let magazine_title = `HACKER's CLUB MAGAZINE`
+    if (this.state.magazine_id == 'top') {
+      magazine_title = '共同マガジン一覧'
+    }
+    let img = (
+      <img
+        src={alis_hackers}
+        style={{
+          borderRadius: '50%',
+          marginRight: '10px',
+          height: '35px',
+          marginBottom: '6px',
+        }}
+      />
+    )
+    if (this.state.magazine != undefined) {
+      img = null
+      magazine_title = this.state.magazine.title
+    }
+    if (is_html) {
+      magazine_title = [img, <b>{magazine_title}</b>]
+    }
+    return magazine_title
+  }
+  getMagazineDescription() {
+    let description
+    if (this.state.magazine_id == 'top') {
+      description = 'ALISISTAの皆さんが発刊した共同マガジンのリストです。'
+    } else if (this.state.magazine == undefined) {
+      description = 'ハッカー部の公式マガジンです。'
+    } else if (this.state.magazine.description != undefined) {
+      description = this.state.magazine.description
+    }
+    return <div className="text-center mb-4">{description}</div>
+  }
+  loadArticles() {
+    this.auth.listArticles()
+  }
   render() {
+    let updated = this.state.updated
     let site_title = 'ALISハッカー部'
     if (process.env.WAVES_NETWORK === 'TESTNET') {
       site_title = 'AHT TESTNET'
@@ -85,21 +220,77 @@ class Magazine extends ComponentP {
         </div>
       )
     })
-    let body =
-      this.state.magazine_articles === undefined ? (
-        <Loading />
-      ) : (
-        this.render_dashboard()
+    let body
+
+    if (
+      this.state.noMagazine === true ||
+      (this.state.magazine != undefined &&
+        this.state.magazine.deleted != undefined)
+    ) {
+      body = (
+        <Loading
+          title="マガジンが見つかりませんでした。"
+          subtitle="idをお確かめ下さい..."
+          btn_text="ハッカー部公式マガジンへ"
+          btn_link="/magazines/"
+        />
       )
+    } else if (this.state.magazine_articles === undefined) {
+      body = <Loading />
+    } else if (
+      this.state.magazine_articles.length === 0 &&
+      this.state.tab === 'articles'
+    ) {
+      body = (
+        <Loading
+          title={this.state.magazine.title}
+          subtitle="このマガジンに記事を投稿してみましょう！"
+          btn_text="ハッカー部公式マガジンへ"
+          btn_link="/magazines/"
+          message={this.state.magazine.description}
+          no_message={
+            this.state.magazine.description == undefined ||
+            this.state.magazine.description === ''
+          }
+        />
+      )
+    } else {
+      body = this.render_dashboard()
+    }
     let nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'トークン', href: '/token/supply/' },
       { name: 'whoami', href: '/whoami/' },
       { name: 'ランキング', href: '/rankings/alis/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
+    const nav_links_sub = [{ name: '記事', key: 'articles', icon: 'bookmark' }]
+    let subheader
+    if (
+      !(
+        this.state.magazine != undefined &&
+        this.state.magazine.deleted != undefined
+      ) &&
+      (this.is_editor() || this.is_admin())
+    ) {
+      if (this.is_editor()) {
+        nav_links_sub.push({
+          name: '投稿',
+          key: 'post',
+          icon: 'upload',
+          func: () => {
+            this.loadArticles()
+          },
+        })
+        if (this.is_admin()) {
+          nav_links_sub.push({ name: '設定', key: 'settings', icon: 'cogs' })
+        }
+      }
+      subheader = <Subheader items={nav_links_sub} component={this} />
+    }
     return (
       <Layout>
-        <Helmet title={`HACKER's CLUB MAGAZINE | ${site_title}`} desc="" />
+        <Helmet title={`${this.getMagazineTitle()} | ${site_title}`} desc="" />
         <Header_Home
           payment={this.state.payment}
           links={nav_links}
@@ -107,6 +298,7 @@ class Magazine extends ComponentP {
           user={this.state.user}
           serverInfo={this.state.serverInfo}
         />
+        {subheader}
         <div className="my-3 my-md-5">
           <div className="container">
             <Alert items={this.state.alerts} alerts={this.alerts} />
@@ -259,10 +451,185 @@ class Magazine extends ComponentP {
   }
   exec_tip(article) {
     if (this.state.tip > 0) {
-      this.auth.tip(this.state.tip, article)
+      this.auth.tip(this.state.tip, article, this.state.magazine_id)
     }
   }
   render_dashboard() {
+    if (this.state.tab === 'articles') {
+      return this.render_dashboard_articles()
+    } else if (this.state.tab === 'post') {
+      return this.render_dashboard_post()
+    } else {
+      return this.render_dashboard_settings()
+    }
+  }
+  render_dashboard_post() {
+    return (
+      <div className="card">
+        <Post_Magazine
+          articles_page={this.state.articles_page}
+          nomore_articles={this.state.nomore_articles}
+          magazine_id={this.state.magazine_id}
+          magazineArticles={this.state.magazineArticles}
+          userArticles={this.state.userArticles}
+          showModal={this.showModal}
+          auth={this.auth}
+        />
+      </div>
+    )
+  }
+  render_dashboard_settings() {
+    return (
+      <Issue_Magazine
+        magazine_id={this.state.magazine_id}
+        magazine={this.state.magazine}
+        user={this.state.user}
+        userInfo={this.state.userInfo}
+        showModal={this.showModal}
+        userMagazines={this.state.userMagazines}
+        auth={this.auth}
+      />
+    )
+  }
+  drawMagazine(article) {
+    let magazine_articles = []
+    for (let v of article.articles) {
+      magazine_articles.push(
+        <tr>
+          <td className="w-1">
+            <a
+              target="_blank"
+              href={`https://alis.to/users/${v.user_id}`}
+              className="avatar"
+              style={{ backgroundImage: `url(${v.icon_image_url})` }}
+            />
+          </td>
+          <td className="small">
+            <a
+              className="text-dark"
+              href={`https://alis.to/${v.user_id}/articles/${v.article_id}`}
+              target="_blank"
+            >
+              {v.title}
+            </a>
+          </td>
+        </tr>
+      )
+    }
+    let html = (
+      <div className="col-md-6 col-xl-4">
+        <div className="card">
+          <a
+            href={`/magazines/?id=${article.file_id}`}
+            style={{
+              height: '150px',
+              backgroundImage: `url(${article.cover_image ||
+                '/img/bg-showcase-4.jpg'})`,
+              backgroundSize: 'cover',
+            }}
+          />
+          <div className="card-body d-flex flex-column">
+            <h4 style={{ lineHeight: '150%' }}>
+              <a href={`/magazines/?id=${article.file_id}`}>{article.title}</a>
+            </h4>
+            <div className="text-muted" style={{ fontSize: '12px' }}>
+              {article.description}
+            </div>
+          </div>
+          <div className="table-responsive">
+            <table
+              className="table card-table table-sm table-striped table-vcenter"
+              style={{ borderTop: '1px solid #dee2e6' }}
+            >
+              <tbody>{magazine_articles}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    )
+    return html
+  }
+  drawArticle(article) {
+    let last_tip = article.last_tip || 0
+    let tip = article.tip || 0
+    for (let v of this.state.tip_history || []) {
+      if (
+        v.article.article_id === article.article_id &&
+        last_tip < v.date &&
+        this.state.magazine_id === (v.magazine_id || 'admin')
+      ) {
+        tip += v.amount
+      }
+    }
+    tip = Math.round(tip * 10) / 10
+    let html = (
+      <div className="col-md-6 col-xl-4">
+        <div className="card">
+          <a
+            target="_blank"
+            href={`https://alis.to/${article.user_id}/articles/${
+              article.article_id
+            }/`}
+            style={{
+              height: '150px',
+              backgroundImage: `url(${article.eye_catch_url})`,
+              backgroundSize: 'cover',
+            }}
+          />
+          <div className="card-body d-flex flex-column">
+            <h4 style={{ lineHeight: '150%' }}>
+              <a
+                target="_blank"
+                href={`https://alis.to/${article.user_id}/articles/${
+                  article.article_id
+                }/`}
+              >
+                {article.title}
+              </a>
+            </h4>
+            <div className="text-muted" style={{ fontSize: '12px' }}>
+              {article.overview}
+              ...
+            </div>
+            <div className="d-flex align-items-center pt-5 mt-auto">
+              <div
+                className="avatar avatar-md mr-3"
+                style={{ backgroundImage: `url(${article.icon_image_url})` }}
+              />
+              <div>
+                <a
+                  target="_blank"
+                  href={`https://alis.to/users/${article.user_id}`}
+                  className="text-default"
+                >
+                  {article.user_display_name}
+                </a>
+                <small className="d-block text-muted">
+                  {moment(article.published_at * 1000).format('YYYY MM/DD')}
+                </small>
+              </div>
+              <div className="ml-auto text-danger">
+                <a
+                  onClick={() => {
+                    this.tip(article)
+                  }}
+                  className="icon d-inline-block ml-3"
+                  style={{ fontSize: '20px' }}
+                >
+                  <i className="fa fa-donate mr-1" />{' '}
+                  <b className="text-primary">{tip}</b>{' '}
+                  <span style={{ fontSize: '12px' }}>AHT</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+    return html
+  }
+
+  render_dashboard_articles() {
     let pages_html
     let pages = []
     for (let p = 1; p <= Math.ceil(this.state.len / 6); p++) {
@@ -295,99 +662,24 @@ class Magazine extends ComponentP {
 
     let articles_html = []
     for (let article of this.state.magazine_articles) {
-      let last_tip = article.last_tip || 0
-      let tip = article.tip || 0
-      for (let v of this.state.tip_history || []) {
-        if (v.article.article_id === article.article_id && last_tip < v.date) {
-          tip += v.amount
-        }
+      if (this.state.magazine_id === 'top') {
+        articles_html.push(this.drawMagazine(article))
+      } else {
+        articles_html.push(this.drawArticle(article))
       }
-      tip = Math.round(tip * 10) / 10
-      articles_html.push(
-        <div className="col-md-6 col-xl-4">
-          <div className="card">
-            <a
-              target="_blank"
-              href={`https://alis.to/${article.user_id}/articles/${
-                article.article_id
-              }/`}
-              style={{
-                height: '150px',
-                backgroundImage: `url(${article.eye_catch_url})`,
-                backgroundSize: 'cover',
-              }}
-            />
-            <div className="card-body d-flex flex-column">
-              <h4 style={{ lineHeight: '150%' }}>
-                <a
-                  target="_blank"
-                  href={`https://alis.to/${article.user_id}/articles/${
-                    article.article_id
-                  }/`}
-                >
-                  {article.title}
-                </a>
-              </h4>
-              <div className="text-muted" style={{ fontSize: '12px' }}>
-                {article.overview}
-                ...
-              </div>
-              <div className="d-flex align-items-center pt-5 mt-auto">
-                <div
-                  className="avatar avatar-md mr-3"
-                  style={{ backgroundImage: `url(${article.icon_image_url})` }}
-                />
-                <div>
-                  <a
-                    target="_blank"
-                    href={`https://alis.to/users/${article.user_id}`}
-                    className="text-default"
-                  >
-                    {article.user_display_name}
-                  </a>
-                  <small className="d-block text-muted">
-                    {moment(article.published_at * 1000).format('YYYY MM/DD')}
-                  </small>
-                </div>
-                <div className="ml-auto text-danger">
-                  <a
-                    onClick={() => {
-                      this.tip(article)
-                    }}
-                    className="icon d-inline-block ml-3"
-                    style={{ fontSize: '20px' }}
-                  >
-                    <i className="fa fa-donate mr-1" />{' '}
-                    <b className="text-primary">{tip}</b>{' '}
-                    <span style={{ fontSize: '12px' }}>AHT</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
     }
     return (
       <div>
         <h1
-          className="page-title mb-3"
+          className="page-title"
           style={{
             textAlign: 'center',
             fontFamily: `'Rounded Mplus 1c', 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
           }}
         >
-          <img
-            src={alis_hackers}
-            style={{
-              borderRadius: '50%',
-              marginRight: '10px',
-              height: '35px',
-              marginBottom: '6px',
-            }}
-          />
-          <b>HACKER's CLUB MAGAZINE</b>
+          {this.getMagazineTitle(true)}
         </h1>
+        {this.getMagazineDescription()}
         <div className="row row-cards row-deck">{articles_html}</div>
         {pages_html}
       </div>

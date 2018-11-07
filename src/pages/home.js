@@ -22,6 +22,7 @@ import History from '../components/history'
 import Tip_History from '../components/tip_history'
 import Payment from '../components/payment'
 import Profile from '../components/profile'
+import Magazines from '../components/magazines'
 import Admin from '../components/admin'
 import auth from '../lib/auth'
 import alerts from '../lib/alerts'
@@ -58,6 +59,8 @@ class Home extends Component {
       ],
     }
     this.state = {
+      articles_page: 1,
+      nomore_articles: false,
       articles: [],
       tab: 'home',
       serverInfo: {},
@@ -133,19 +136,20 @@ class Home extends Component {
       { name: 'トークン', href: '/token/supply/' },
       { name: 'whoami', href: '/whoami/' },
       { name: 'ランキング', href: '/rankings/alis/' },
-      { name: '公式マガジン', href: '/magazines/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
 
     const nav_links_sub = [
       { name: 'ホーム', key: 'home', icon: 'home' },
       { name: '入部', key: 'mission', icon: 'door-open' },
-      { name: 'WAVESウォレット', key: 'waves', icon: 'wallet' },
+      { name: 'ウォレット', key: 'waves', icon: 'wallet' },
     ]
     if (
       this.state.serverInfo != undefined &&
       this.state.serverInfo.alis != undefined
     ) {
       nav_links_sub.push({ name: 'ALIS記事', key: 'alis', icon: 'bookmark' })
+      nav_links_sub.push({ name: 'マガジン', key: 'magazine', icon: 'book' })
     }
 
     return (
@@ -255,12 +259,26 @@ class Home extends Component {
               serverInfo={this.state.serverInfo}
             />
             <Articles
+              articles_page={this.state.articles_page}
+              nomore_articles={this.state.nomore_articles}
               userInfo={this.state.userInfo}
               serverInfo={this.state.serverInfo}
               showModal={this.showModal}
               articles={this.state.articles}
-              magazinArticles={this.state.magazinArticles}
+              magazineArticles={this.state.magazineArticles}
               userArticles={this.state.userArticles}
+              auth={this.auth}
+            />
+          </div>
+        )
+      } else if (this.state.tab == 'magazine') {
+        right_column = (
+          <div className="col-lg-8">
+            <Magazines
+              user={this.state.user}
+              userInfo={this.state.userInfo}
+              showModal={this.showModal}
+              userMagazines={this.state.userMagazines}
               auth={this.auth}
             />
           </div>

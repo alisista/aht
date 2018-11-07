@@ -56,7 +56,8 @@ class Supply extends ComponentP {
       { name: 'whoami', href: '/whoami/' },
       { name: 'ランキング', href: '/rankings/alis/' },
       { name: '企画', href: '/rankings/note/?tag=alis' },
-      { name: '公式マガジン', href: '/magazines/' },
+      { name: 'ランキング', href: '/rangings/alis/' },
+      { name: 'マガジン', href: '/magazines/' },
     ]
 
     const nav_links_sub = [
