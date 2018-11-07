@@ -267,6 +267,7 @@ class Magazine extends ComponentP {
     const nav_links_sub = [{ name: '記事', key: 'articles', icon: 'bookmark' }]
     let subheader
     if (
+      this.state.magazine_id != 'top' &&
       !(
         this.state.magazine != undefined &&
         this.state.magazine.deleted != undefined

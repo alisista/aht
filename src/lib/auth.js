@@ -368,7 +368,6 @@ class Auth {
       .then(ss => {
         let articles = {}
         ss.forEach(doc => {
-          console.log(doc.data())
           articles[doc.id] = doc.data()
         })
         this.component.setState({ userArticles: articles }, () => {})
@@ -407,7 +406,6 @@ class Auth {
           mid: magazine_id,
         },
         json => {
-          console.log(json)
           if (json.error != null) {
             this.component.showModal(modals.error_general)
           } else {
@@ -440,7 +438,6 @@ class Auth {
           if (json.error != null) {
             this.component.showModal(modals.error_general)
           } else {
-            console.log(json)
             this.component.showModal({
               title: (
                 <div>
@@ -648,7 +645,6 @@ class Auth {
         },
         json => {
           if (json.error != null) {
-            console.log(json)
             this.component.showModal(modals.error_general)
           } else {
             this.getUserInfo(this.component.state.user)
