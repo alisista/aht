@@ -24,7 +24,7 @@ class Articles extends Component {
     let editors = window.$('[name="editors"]:checked').val()
     let title = window.$('#magazine_title').val()
     let description = window.$('#magazine_description').val()
-    let url_id = window.$('#magazine_id').val()
+    let url_id = window.$('#magazine_id').val() || this.props.magazine.url_id
     if (!is_edit && this.state.is_invalid !== false) {
       this.props.showModal({
         title: (

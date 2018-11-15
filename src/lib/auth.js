@@ -902,6 +902,17 @@ class Auth {
         }
       })
   }
+  async getMagazineByID(magazine_id) {
+    let ss = await this.db
+      .collection('magazines_ids')
+      .doc(magazine_id)
+      .get()
+    if (ss.exists) {
+      return ss.data()
+    } else {
+      return null
+    }
+  }
   deleteMagazine(magazine) {
     this.genRandomValue(random_value => {
       window.$.post(
