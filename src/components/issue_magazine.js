@@ -170,9 +170,11 @@ class Articles extends Component {
   }
   render() {
     let action_word = '発刊'
+    let action_btn_word = '発刊'
     let delete_btn
     if (this.props.magazine != undefined) {
-      action_word = '保存'
+      action_word = '編集'
+      action_btn_word = '保存'
       delete_btn = (
         <a
           onClick={() => {
@@ -252,7 +254,11 @@ class Articles extends Component {
       check_btn = 'dark'
       check_btn_disabled = 'disabled'
       invalid_cursor = 'default'
-    } else if (this.state.is_invalid === 'is-valid') {
+    } else if (
+      this.state.is_invalid === 'is-valid' ||
+      (this.props.magazine != undefined &&
+        this.props.magazine.url_id != undefined)
+    ) {
       check_btn_disabled = 'disabled'
       check_btn = 'dark'
       invalid_state = 'state-valid'
@@ -285,7 +291,7 @@ class Articles extends Component {
         className={`form-control ${this.state.is_invalid}  ${invalid_state}`}
         disabled={magazine_url_disabled}
         name="example-text-input"
-        placeholder="マガジン名"
+        placeholder="マガジンID"
       />
     )
     let id_check_btn = (
@@ -311,6 +317,48 @@ class Articles extends Component {
     ) {
       id_check_btn = id_check_btn_input
     }
+
+    let invalid_message, magazine_id_edit
+    if (
+      this.props.magazine != undefined &&
+      this.props.magazine.url_id != undefined
+    ) {
+      let magazine_url = `https://${process.env.MAGAZINE_DOMAIN}/${
+        this.props.magazine.url_id
+      }/`
+      invalid_message = (
+        <b>
+          <a href={magazine_url} target="_blank">
+            {magazine_url}{' '}
+          </a>
+        </b>
+      )
+      magazine_id_edit = (
+        <div className="form-group">
+          <label className="form-label">
+            マガジン公式URL（反映に最大1時間かかります）
+          </label>
+          <div
+            className={`alert alert-success mt-1`}
+            style={{ textAlign: 'center', fontSize: '20px' }}
+          >
+            {invalid_message}
+          </div>
+        </div>
+      )
+    } else {
+      magazine_id_edit = (
+        <div className="form-group">
+          <label className="form-label">
+            マガジンID(英数_- ３０文字以内、変更不可)
+          </label>
+          {id_check_btn}
+          <div className={`text-${invalid_color} mt-1`}>
+            {invalid_message || this.state.invalid_message}
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="card">
         <div className="card-header">
@@ -328,21 +376,13 @@ class Articles extends Component {
               }}
               className="btn btn-green btn-sm text-white"
             >
-              {action_word}
+              {action_btn_word}
             </a>
             {delete_btn}
           </div>
         </div>
         <div className="card-body">
-          <div className="form-group">
-            <label className="form-label">
-              マガジンID(英数_- ３０文字以内、変更不可)
-            </label>
-            {id_check_btn}
-            <div className={`text-${invalid_color} mt-1`}>
-              {this.state.invalid_message}
-            </div>
-          </div>
+          {magazine_id_edit}
           <div className="form-group">
             <label className="form-label">マガジン名</label>
             <input

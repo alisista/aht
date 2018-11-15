@@ -329,10 +329,6 @@ class Auth {
       })
   }
   checkMagazineID(id, issue_component) {
-    let https = 'https'
-    if (process.env.WAVES_NETWORK === 'TESTNET') {
-      https = 'http'
-    }
     id = id.toLowerCase()
     window.$.post(
       `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/check/magazine_id/`,
@@ -344,7 +340,7 @@ class Auth {
           if (json.exists === false) {
             issue_component.setState({
               is_invalid: 'is-valid',
-              invalid_message: `${https}://${
+              invalid_message: `https://${
                 process.env.MAGAZINE_DOMAIN
               }/${id}/ がマガジンURLになります。`,
             })
