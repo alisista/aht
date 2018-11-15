@@ -283,9 +283,9 @@ class Magazine extends ComponentP {
             this.loadArticles()
           },
         })
-        if (this.is_admin()) {
-          nav_links_sub.push({ name: '設定', key: 'settings', icon: 'cogs' })
-        }
+      }
+      if (this.is_admin()) {
+        nav_links_sub.push({ name: '設定', key: 'settings', icon: 'cogs' })
       }
       subheader = <Subheader items={nav_links_sub} component={this} />
     }
