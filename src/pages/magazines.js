@@ -42,19 +42,19 @@ class Magazine extends ComponentP {
   }
   is_editor() {
     return (
-      this.is_admin() ||
-      ((this.state.magazine_id !== 'admin' &&
-        (this.state.magazine != undefined &&
-          this.state.magazine.editors === 'anyone' &&
-          this.state.serverInfo != undefined &&
-          this.state.serverInfo.alis != undefined)) ||
-        (this.state.serverInfo != undefined &&
-          this.state.serverInfo.alis != undefined &&
-          this.state.userInfo != undefined &&
-          this.state.userInfo.missions != undefined &&
-          this.state.userInfo.missions.join != undefined &&
-          this.state.userInfo.missions.join.confirmed != undefined &&
-          this.state.userInfo.missions.join.confirmed != false))
+      this.state.serverInfo != undefined &&
+      this.state.serverInfo.alis != undefined &&
+      (this.is_admin() ||
+        ((this.state.magazine_id !== 'admin' &&
+          (this.state.magazine != undefined &&
+            this.state.magazine.editors === 'anyone' &&
+            this.state.serverInfo != undefined &&
+            this.state.serverInfo.alis != undefined)) ||
+          (this.state.userInfo != undefined &&
+            this.state.userInfo.missions != undefined &&
+            this.state.userInfo.missions.join != undefined &&
+            this.state.userInfo.missions.join.confirmed != undefined &&
+            this.state.userInfo.missions.join.confirmed != false)))
     )
   }
   is_admin() {

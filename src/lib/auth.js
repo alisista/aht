@@ -47,7 +47,7 @@ const config = {
   timestampsInSnapshots: true,
 }
 firebase.initializeApp(config)
-console.log(config)
+
 class Auth {
   constructor(component, opts = {}) {
     this.opts = opts
@@ -328,7 +328,40 @@ class Auth {
         console.log(e)
       })
   }
-
+  checkMagazineID(id, issue_component) {
+    let https = 'https'
+    if (process.env.WAVES_NETWORK === 'TESTNET') {
+      https = 'http'
+    }
+    id = id.toLowerCase()
+    window.$.post(
+      `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/check/magazine_id/`,
+      { magazine_id: id },
+      json => {
+        if (json.error != null) {
+          this.component.showModal(modals.error_general)
+        } else {
+          if (json.exists === false) {
+            issue_component.setState({
+              is_invalid: 'is-valid',
+              invalid_message: `${https}://${
+                process.env.MAGAZINE_DOMAIN
+              }/${id}/ がマガジンURLになります。`,
+            })
+          } else {
+            let invalid_ids = issue_component.state.invalid_ids
+            invalid_ids[id] = true
+            issue_component.setState({
+              invalid_ids: invalid_ids,
+              is_invalid: 'is-invalid',
+              invalid_message: `既に使われてるIDです。`,
+            })
+          }
+          console.log(json)
+        }
+      }
+    )
+  }
   listArticles(LastEvaluatedKey) {
     let uid = this.component.state.user.uid
     window.$.post(
@@ -907,7 +940,7 @@ class Auth {
       )
     })
   }
-  issueMagazine(magazine) {
+  issueMagazine(magazine, issue_component, callback) {
     this.genRandomValue(random_value => {
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/magazine/issue/${
@@ -916,7 +949,28 @@ class Auth {
         magazine,
         async json => {
           if (json.error != null) {
-            this.component.showModal(modals.error_general)
+            if (json.error === 3) {
+              this.component.showModal({
+                title: (
+                  <div>
+                    <i className="text-danger fas fa-ban" /> ID使用不可！
+                  </div>
+                ),
+                body: `『${
+                  magazine.url_id
+                }』は既に他のユーザーに使われています。`,
+                cancel_text: '確認',
+              })
+              let invalid_ids = issue_component.state.invalid_ids
+              invalid_ids[magazine.url_id] = true
+              issue_component.setState({
+                invalid_ids: invalid_ids,
+                is_invalid: 'is-invalid',
+                invalid_message: `既に使われてるIDです。`,
+              })
+            } else {
+              this.component.showModal(modals.error_general)
+            }
           } else {
             if (magazine.is_edit) {
               this.component.setState(
@@ -947,6 +1001,7 @@ class Auth {
                 body: `新マガジン『${magazine.title}』を発刊しました！`,
                 cancel_text: '確認',
               })
+              callback()
             }
             this.getUserMagazines()
           }
