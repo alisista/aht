@@ -25,7 +25,7 @@ class Articles extends Component {
     let title = window.$('#magazine_title').val()
     let description = window.$('#magazine_description').val()
     let url_id = window.$('#magazine_id').val() || this.props.magazine.url_id
-    if (!is_edit && this.state.is_invalid !== false) {
+    if (!is_edit && this.state.is_invalid === 'is-invalid') {
       this.props.showModal({
         title: (
           <div>
