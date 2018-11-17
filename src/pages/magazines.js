@@ -29,6 +29,8 @@ class Magazine extends ComponentP {
     let page = (this.params.page || 1) * 1
     let magazine_id = this.params.id || 'top'
     this.state = {
+      search_key: '',
+      search: 'self',
       tab: 'articles',
       tip: 0,
       page: page,
@@ -110,7 +112,7 @@ class Magazine extends ComponentP {
           map.maps.map[this.state.page],
           this.state.page
         )
-        await this.setState({
+        await this.set({
           magazine: map.maps,
           magazine_articles: json.articles,
           len: json.len,
@@ -191,8 +193,10 @@ class Magazine extends ComponentP {
     }
     return <div className="text-center mb-4">{description}</div>
   }
-  loadArticles() {
-    this.auth.listArticles()
+  async loadArticles() {
+    await this.auth.getAllArticles(this.state.magazine_id)
+    await this.set({ magazineArticles: [], articles_page: null })
+    this.auth.listArticles(this.state.search)
   }
   render() {
     let updated = this.state.updated
@@ -220,43 +224,6 @@ class Magazine extends ComponentP {
         </div>
       )
     })
-    let body
-
-    if (
-      this.state.noMagazine === true ||
-      (this.state.magazine != undefined &&
-        this.state.magazine.deleted != undefined)
-    ) {
-      body = (
-        <Loading
-          title="マガジンが見つかりませんでした。"
-          subtitle="idをお確かめ下さい..."
-          btn_text="ハッカー部公式マガジンへ"
-          btn_link="/magazines/"
-        />
-      )
-    } else if (this.state.magazine_articles === undefined) {
-      body = <Loading />
-    } else if (
-      this.state.magazine_articles.length === 0 &&
-      this.state.tab === 'articles'
-    ) {
-      body = (
-        <Loading
-          title={this.state.magazine.title}
-          subtitle="このマガジンに記事を投稿してみましょう！"
-          btn_text="ハッカー部公式マガジンへ"
-          btn_link="/magazines/"
-          message={this.state.magazine.description}
-          no_message={
-            this.state.magazine.description == undefined ||
-            this.state.magazine.description === ''
-          }
-        />
-      )
-    } else {
-      body = this.render_dashboard()
-    }
     let nav_links = [
       { name: 'ホーム', href: '/home/' },
       { name: 'トークン', href: '/token/supply/' },
@@ -288,6 +255,45 @@ class Magazine extends ComponentP {
         nav_links_sub.push({ name: '設定', key: 'settings', icon: 'cogs' })
       }
       subheader = <Subheader items={nav_links_sub} component={this} />
+    }
+
+    let body
+
+    if (
+      this.state.noMagazine === true ||
+      (this.state.magazine != undefined &&
+        this.state.magazine.deleted != undefined)
+    ) {
+      subheader = null
+      body = (
+        <Loading
+          title="マガジンが見つかりませんでした。"
+          subtitle="idをお確かめ下さい..."
+          btn_text="ハッカー部公式マガジンへ"
+          btn_link="/magazines/"
+        />
+      )
+    } else if (this.state.magazine_articles === undefined) {
+      body = <Loading />
+    } else if (
+      this.state.magazine_articles.length === 0 &&
+      this.state.tab === 'articles'
+    ) {
+      body = (
+        <Loading
+          title={this.state.magazine.title}
+          subtitle="このマガジンに記事を投稿してみましょう！"
+          btn_text="ハッカー部公式マガジンへ"
+          btn_link="/magazines/"
+          message={this.state.magazine.description}
+          no_message={
+            this.state.magazine.description == undefined ||
+            this.state.magazine.description === ''
+          }
+        />
+      )
+    } else {
+      body = this.render_dashboard()
     }
     return (
       <Layout>
@@ -354,7 +360,11 @@ class Magazine extends ComponentP {
         body: <p>投げ銭をするにはログインが必要です！</p>,
         cancel_text: '確認',
       })
-    } else if (article.uid === this.state.user.uid) {
+    } else if (
+      this.state.serverInfo != undefined &&
+      this.state.serverInfo.alis != undefined &&
+      article.user_id === this.state.serverInfo.alis.user_id
+    ) {
       this.showModal({
         title: (
           <div>
@@ -452,7 +462,7 @@ class Magazine extends ComponentP {
   }
   exec_tip(article) {
     if (this.state.tip > 0) {
-      this.auth.tip(this.state.tip, article, this.state.magazine_id)
+      this.auth.tip(this.state.tip, article, this.state.magazine.file_id)
     }
   }
   render_dashboard() {
@@ -465,17 +475,117 @@ class Magazine extends ComponentP {
     }
   }
   render_dashboard_post() {
+    let search_targets = [
+      { key: `self`, name: `自分`, placeholder: '' },
+      { key: `others`, name: `他人`, placeholder: 'ALISユーザーID' },
+      { key: `id`, name: `記事ID`, placeholder: '記事ID/URL' },
+      { key: `tag`, name: `タグ`, placeholder: 'タグ' },
+      { key: `search`, name: `検索`, placeholder: '検索キーワード' },
+    ]
+    let search_placeholder = {}
+    for (let v of search_targets) {
+      search_placeholder[v.key] = v
+    }
+    let search_box
+    if (this.state.search !== 'self') {
+      search_box = (
+        <div style={{ textAlign: 'center' }} className="mb-2">
+          <div style={{ maxWidth: '400px', display: 'inline-block' }}>
+            <div className="input-group mt-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder={search_placeholder[this.state.search].placeholder}
+                value={this.state.search_key}
+                onChange={e => {
+                  this.setState({ search_key: e.target.value })
+                }}
+              />
+              <div className="input-group-append">
+                <button
+                  className="btn btn-outline-primary"
+                  type="button"
+                  onClick={() => {
+                    this.set({ magazineArticles: [] })
+                    this.auth.listArticles()
+                  }}
+                >
+                  検索
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    let search_html = []
+    for (let v of search_targets) {
+      let btn_color = 'secondary'
+      if (this.state.search === v.key) {
+        btn_color = 'success'
+      }
+      search_html.push(
+        <button
+          type="button"
+          className={`btn btn-${btn_color}`}
+          onClick={() => {
+            this.setState(
+              {
+                search_key: '',
+                magazineArticles: [],
+                search: v.key,
+                articles_page: null,
+              },
+              () => {
+                if (this.state.search === 'self') {
+                  this.auth.listArticles()
+                }
+              }
+            )
+          }}
+        >
+          {v.name}
+        </button>
+      )
+    }
+    let card
+    if ((this.state.magazineArticles || []).length !== 0) {
+      card = (
+        <div className="card">
+          <Post_Magazine
+            user={this.state.user}
+            magazine={this.state.magazine}
+            all_articles={this.state.all_articles}
+            articles_page={this.state.articles_page}
+            nomore_articles={this.state.nomore_articles}
+            magazine_id={this.state.magazine_id}
+            magazineArticles={this.state.magazineArticles}
+            userArticles={this.state.userArticles}
+            serverInfo={this.state.serverInfo}
+            showModal={this.showModal}
+            auth={this.auth}
+          />
+        </div>
+      )
+    }
     return (
-      <div className="card">
-        <Post_Magazine
-          articles_page={this.state.articles_page}
-          nomore_articles={this.state.nomore_articles}
-          magazine_id={this.state.magazine_id}
-          magazineArticles={this.state.magazineArticles}
-          userArticles={this.state.userArticles}
-          showModal={this.showModal}
-          auth={this.auth}
-        />
+      <div>
+        <div className="mb-3" style={{ textAlign: 'center', width: '100%' }}>
+          <div
+            className="btn-group"
+            role="group"
+            aria-label="Basic example"
+            style={{
+              textAlign: 'center',
+              width: '100%',
+              display: 'inline-block',
+            }}
+          >
+            {search_html}
+            {search_box}
+          </div>
+        </div>
+        {card}
       </div>
     )
   }
@@ -557,12 +667,30 @@ class Magazine extends ComponentP {
       if (
         v.article.article_id === article.article_id &&
         last_tip < v.date &&
-        this.state.magazine_id === (v.magazine_id || 'admin')
+        this.state.magazine.file_id === (v.magazine_id || 'admin')
       ) {
         tip += v.amount
       }
     }
     tip = Math.round(tip * 10) / 10
+    let tip_btn
+    if (article.notip !== true) {
+      tip_btn = (
+        <div className="ml-auto text-danger">
+          <a
+            onClick={() => {
+              this.tip(article)
+            }}
+            className="icon d-inline-block ml-3"
+            style={{ fontSize: '20px' }}
+          >
+            <i className="fa fa-donate mr-1" />{' '}
+            <b className="text-primary">{tip}</b>{' '}
+            <span style={{ fontSize: '12px' }}>AHT</span>
+          </a>
+        </div>
+      )
+    }
     let html = (
       <div className="col-md-6 col-xl-4">
         <div className="card">
@@ -609,19 +737,7 @@ class Magazine extends ComponentP {
                   {moment(article.published_at * 1000).format('YYYY MM/DD')}
                 </small>
               </div>
-              <div className="ml-auto text-danger">
-                <a
-                  onClick={() => {
-                    this.tip(article)
-                  }}
-                  className="icon d-inline-block ml-3"
-                  style={{ fontSize: '20px' }}
-                >
-                  <i className="fa fa-donate mr-1" />{' '}
-                  <b className="text-primary">{tip}</b>{' '}
-                  <span style={{ fontSize: '12px' }}>AHT</span>
-                </a>
-              </div>
+              {tip_btn}
             </div>
           </div>
         </div>
@@ -644,9 +760,13 @@ class Magazine extends ComponentP {
           </li>
         )
       } else {
+        let id = ''
+        if (this.state.magazine_id != undefined) {
+          id = `&id=${this.state.magazine_id}`
+        }
         pages.push(
           <li className={`page-item`}>
-            <a className="page-link" href={`/magazines/?page=${p}`}>
+            <a className="page-link" href={`/magazines/?page=${p}${id}`}>
               {p}
             </a>
           </li>

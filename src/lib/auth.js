@@ -36,6 +36,15 @@ const modals = {
     body: '時間を置いてからもう一度申請して下さい。',
     cancel_text: '確認',
   },
+  error_notfound: {
+    title: (
+      <div>
+        <i className="text-danger fas fa-ban" /> エラーが発生しました！
+      </div>
+    ),
+    body: '記事が見つかりません。',
+    cancel_text: '確認',
+  },
 }
 const config = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -46,7 +55,9 @@ const config = {
   messagingSenderId: process.env.FIREBASE_SENDER_ID,
   timestampsInSnapshots: true,
 }
-firebase.initializeApp(config)
+try {
+  firebase.initializeApp(config)
+} catch (e) {}
 
 class Auth {
   constructor(component, opts = {}) {
@@ -253,7 +264,9 @@ class Auth {
             this.getUserPayment(user)
             this.getUserArticles(user)
             this.getUserMagazines()
+            this.getUserMagazineArticles()
           }
+
           if (this.opts.oauth != undefined) {
             this.validateWavesAddress(this.opts.oauth)
           }
@@ -359,15 +372,40 @@ class Auth {
     )
   }
   listArticles(LastEvaluatedKey) {
+    let search = this.component.state.search || 'self'
     let uid = this.component.state.user.uid
+    let user_id = this.component.state.serverInfo.alis.user_id
+    let body = { LastEvaluatedKey: LastEvaluatedKey, search: search }
+    if (search != 'self') {
+      user_id = this.component.state.search_key
+      if (user_id.match(/^\s*$/) != null) {
+        this.component.showModal({
+          title: (
+            <div>
+              <i className="text-danger fa fa-donate" /> エラー！
+            </div>
+          ),
+          body: <p>値を入力してください！</p>,
+          cancel_text: '確認',
+        })
+        return
+      }
+    }
+    if (search == 'id') {
+      user_id = _.compact(this.component.state.search_key.split('/')).pop()
+    }
     window.$.post(
-      `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/list/articles/${uid}/${
-        this.component.state.serverInfo.alis.user_id
-      }`,
-      { LastEvaluatedKey: LastEvaluatedKey },
+      `${
+        process.env.BACKEND_SERVER_ORIGIN
+      }/${prefix}/list/articles/${uid}/${user_id}`,
+      body,
       json => {
         if (json.error != null) {
-          this.component.showModal(modals.error_general)
+          if (json.error === 4) {
+            this.component.showModal(modals.error_notfound)
+          } else {
+            this.component.showModal(modals.error_general)
+          }
         } else {
           let magazineArticles = (
             this.component.state.magazineArticles || []
@@ -375,10 +413,17 @@ class Auth {
           let newstate = {
             articles_page: json.LastEvaluatedKey,
             magazineArticles: magazineArticles,
+            nomore_articles: false,
           }
-          if (json.articles.length == 0 || json.LastEvaluatedKey == undefined) {
+          if (['tag', 'search'].includes(search) && json.articles.length != 0) {
+            newstate.articles_page = (LastEvaluatedKey || 1) + 1
+          } else if (
+            json.articles.length == 0 ||
+            json.LastEvaluatedKey == undefined
+          ) {
             newstate.nomore_articles = true
           }
+          console.log(newstate)
           this.component.setState(newstate, () => {
             if (LastEvaluatedKey == undefined) {
               this.getUserMagazineArticles()
@@ -434,7 +479,7 @@ class Auth {
           uid: this.component.state.user.uid,
           mid: magazine_id,
         },
-        json => {
+        async json => {
           if (json.error != null) {
             this.component.showModal(modals.error_general)
           } else {
@@ -447,6 +492,21 @@ class Auth {
               body: `${article.title}をマガジンに投稿しました！`,
               cancel_text: '確認',
             })
+            let articles = []
+            let exists = false
+            article.uid = this.component.state.user.uid
+            for (let v of this.component.state.all_articles || []) {
+              if (v.article_id === article.article_id) {
+                exists = true
+                v.removed = false
+              }
+              articles.push(v)
+            }
+            if (exists === false) {
+              article.removed = false
+              articles.push(article)
+            }
+            this.component.setState({ all_articles: articles })
             this.getUserMagazineArticles()
           }
         }
@@ -463,7 +523,7 @@ class Auth {
           uid: this.component.state.user.uid,
           mid: magazine_id,
         },
-        json => {
+        async json => {
           if (json.error != null) {
             this.component.showModal(modals.error_general)
           } else {
@@ -477,12 +537,33 @@ class Auth {
               body: `${article.title}をマガジンから取り下げました！`,
               cancel_text: '確認',
             })
+            let articles = []
+            for (let v of this.component.state.all_articles || []) {
+              if (v.article_id === article.article_id) {
+                v.removed = Date.now()
+              }
+              articles.push(v)
+            }
+            this.component.setState({ all_articles: articles })
             this.getUserMagazineArticles()
           }
         }
       )
     })
   }
+  async getAllArticles(magazine_id) {
+    let ss = await this.db
+      .collection('magazines')
+      .doc(magazine_id)
+      .collection('articles')
+      .get()
+    let articles = []
+    ss.forEach(doc => {
+      articles.push(doc.data())
+    })
+    await this.component.set({ all_articles: articles })
+  }
+
   tip(amount, article, magazine_id) {
     this.genRandomValue(random_value => {
       window.$.post(
@@ -495,7 +576,7 @@ class Auth {
           amount: amount,
         },
         json => {
-          if (json.error != null) {
+          if (json.error != null || json.tip === false) {
             this.component.showModal(modals.error_general)
           } else {
             this.component.showModal({

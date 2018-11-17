@@ -27,7 +27,7 @@ class Post_Magazine extends Component {
       cancel_text: 'キャンセル',
       exec_text: '実行',
       exec: () => {
-        this.props.auth.unpublishArticle(article, this.props.magazine_id)
+        this.props.auth.unpublishArticle(article, this.props.magazine.file_id)
       },
     })
   }
@@ -48,11 +48,37 @@ class Post_Magazine extends Component {
       cancel_text: 'キャンセル',
       exec_text: '実行',
       exec: () => {
-        this.props.auth.publishArticle(article, this.props.magazine_id)
+        this.props.auth.publishArticle(article, this.props.magazine.file_id)
       },
     })
   }
+  isArticleOwner(article, articles_map) {
+    return (
+      articles_map[article.article_id] != undefined &&
+      this.props.serverInfo != undefined &&
+      this.props.serverInfo.alis != undefined &&
+      article.user_id === this.props.serverInfo.alis.user_id
+    )
+  }
+  isArticleUpdater(article, articles_map) {
+    return (
+      this.props.user != undefined &&
+      articles_map[article.article_id] != undefined &&
+      this.props.user.uid === articles_map[article.article_id].uid
+    )
+  }
+  isMagazineOwner() {
+    return (
+      this.props.user != undefined &&
+      this.props.magazine == undefined &&
+      this.props.magazine.owner == this.props.user.uid
+    )
+  }
   render() {
+    let articles_map = {}
+    for (let v of this.props.all_articles || []) {
+      articles_map[v.article_id] = v
+    }
     let more_btn
     if (this.props.nomore_articles != true) {
       more_btn = (
@@ -69,25 +95,35 @@ class Post_Magazine extends Component {
     }
     let articles_html = []
     let articles = []
-    console.log(this.props)
     for (let article of this.props.magazineArticles || []) {
       let uploadButton
       if (
-        this.props.userArticles != undefined &&
-        this.props.userArticles[article.article_id] != undefined &&
-        this.props.userArticles[article.article_id][this.props.magazine_id] !=
-          undefined
+        (this.props.userArticles != undefined &&
+          this.props.userArticles[article.article_id] != undefined &&
+          this.props.userArticles[article.article_id][
+            this.props.magazine.file_id
+          ] != undefined) ||
+        (articles_map[article.article_id] != undefined &&
+          (articles_map[article.article_id].removed == undefined ||
+            articles_map[article.article_id].removed === false))
       ) {
-        uploadButton = (
-          <button
-            className="btn btn-danger"
-            onClick={() => {
-              this.unpublishArticle(article)
-            }}
-          >
-            却下
-          </button>
-        )
+        if (
+          this.props.magazine.file_id == 'admin' ||
+          this.isArticleOwner(article, articles_map) ||
+          this.isArticleUpdater(article, articles_map) ||
+          this.isMagazineOwner()
+        ) {
+          uploadButton = (
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                this.unpublishArticle(article)
+              }}
+            >
+              却下
+            </button>
+          )
+        }
       } else {
         uploadButton = (
           <button
@@ -115,6 +151,13 @@ class Post_Magazine extends Component {
             </div>
             <div className="text-muted small">
               {moment(article.published_at * 1000).format('YYYY MM/DD HH:mm')}
+              <a
+                className="text-muted ml-3"
+                href={`https://alis.to/users/${article.user_id}`}
+                target="_blank"
+              >
+                {article.user_id}
+              </a>
               <span className="ml-6">
                 <b className="text-orange">{article.alis_token}</b>
               </span>

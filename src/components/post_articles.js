@@ -44,14 +44,16 @@ class Post_Articles extends Component {
       )
     }
     articles_html = (
-      <div className="table-responsive">
-        <table className="table card-table table-striped table-vcenter">
-          <thead>
-            <th>ALIS記事</th>
-            <th className="text-center">AHT</th>
-          </thead>
-          <tbody>{articles}</tbody>
-        </table>
+      <div>
+        <div className="table-responsive">
+          <table className="table card-table table-striped table-vcenter">
+            <thead>
+              <th>ALIS記事</th>
+              <th className="text-center">AHT</th>
+            </thead>
+            <tbody>{articles}</tbody>
+          </table>
+        </div>
       </div>
     )
     return articles_html

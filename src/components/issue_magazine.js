@@ -117,7 +117,7 @@ class Articles extends Component {
       magazine.set_id = set_id
       if (is_edit) {
         magazine.id = this.props.magazine.id
-        magazine.file_id = this.props.magazine_id
+        magazine.file_id = this.props.magazine.file_id
       } else {
         magazine.id = shortid()
       }
