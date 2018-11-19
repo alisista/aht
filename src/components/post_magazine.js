@@ -10,6 +10,7 @@ class Post_Magazine extends Component {
     super(props)
   }
   unpublishArticle(article) {
+    let magazine = this.props.magazine || { file_id: 'admin' }
     this.props.showModal({
       title: (
         <div>
@@ -27,11 +28,12 @@ class Post_Magazine extends Component {
       cancel_text: 'キャンセル',
       exec_text: '実行',
       exec: () => {
-        this.props.auth.unpublishArticle(article, this.props.magazine.file_id)
+        this.props.auth.unpublishArticle(article, magazine.file_id)
       },
     })
   }
   publishArticle(article) {
+    let magazine = this.props.magazine || { file_id: 'admin' }
     this.props.showModal({
       title: (
         <div>
@@ -48,7 +50,7 @@ class Post_Magazine extends Component {
       cancel_text: 'キャンセル',
       exec_text: '実行',
       exec: () => {
-        this.props.auth.publishArticle(article, this.props.magazine.file_id)
+        this.props.auth.publishArticle(article, magazine.file_id)
       },
     })
   }
@@ -68,13 +70,15 @@ class Post_Magazine extends Component {
     )
   }
   isMagazineOwner() {
+    let magazine = this.props.magazine || { file_id: 'admin' }
     return (
       this.props.user != undefined &&
-      this.props.magazine == undefined &&
-      this.props.magazine.owner == this.props.user.uid
+      magazine == undefined &&
+      magazine.owner == this.props.user.uid
     )
   }
   render() {
+    let magazine = this.props.magazine || { file_id: 'admin' }
     let articles_map = {}
     for (let v of this.props.all_articles || []) {
       articles_map[v.article_id] = v
@@ -100,15 +104,14 @@ class Post_Magazine extends Component {
       if (
         (this.props.userArticles != undefined &&
           this.props.userArticles[article.article_id] != undefined &&
-          this.props.userArticles[article.article_id][
-            this.props.magazine.file_id
-          ] != undefined) ||
+          this.props.userArticles[article.article_id][magazine.file_id] !=
+            undefined) ||
         (articles_map[article.article_id] != undefined &&
           (articles_map[article.article_id].removed == undefined ||
             articles_map[article.article_id].removed === false))
       ) {
         if (
-          this.props.magazine.file_id == 'admin' ||
+          magazine.file_id == 'admin' ||
           this.isArticleOwner(article, articles_map) ||
           this.isArticleUpdater(article, articles_map) ||
           this.isMagazineOwner()
