@@ -58,11 +58,20 @@ class Payment extends Component {
             </span>
           )
         }
+        let inbound = <i className="fa fa-sign-out-alt fa-rotate-180 mr-2" />
+        let payment_color = 'primary'
+        if (v.type === 'inbound') {
+          payment_color = 'success'
+          inbound = <i className="fa fa-sign-in-alt mr-2" />
+        }
         payment_html.push(
           <tr style={payment_style}>
             <td>{moment(v.date).format('M/D HH:mm')}</td>
             <td>
-              <b className="text-primary">{v.amount}</b>{' '}
+              <b className={`text-${payment_color}`}>
+                {inbound}
+                {v.amount}
+              </b>{' '}
               <span className="text-muted" style={{ fontSize: '12px' }}>
                 AHT
               </span>
