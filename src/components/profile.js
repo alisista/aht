@@ -10,8 +10,9 @@ class Profile extends Component {
   constructor(props) {
     super(props)
   }
-  reservePayment() {
+  async reservePayment() {
     let { amount_aht, unpaid_aht, last_payment } = this.getAmounts()
+    const available_tokens = this.props.tip.getTokenStatus()
     let address
     for (let k in this.props.userInfo.waves_addresses || {}) {
       if (
@@ -46,7 +47,7 @@ class Profile extends Component {
         body: <p>Wavesのアドレスを登録してから、もう一度お試し下さい。</p>,
         cancel_text: '確認',
       })
-    } else if (unpaid_aht === 0) {
+    } else if (available_tokens.length === 0) {
       this.props.showModal({
         title: (
           <div>
@@ -58,6 +59,8 @@ class Profile extends Component {
         cancel_text: '確認',
       })
     } else {
+      this.props.tip.tip(true, address)
+      /*
       this.props.showModal({
         title: (
           <div>
@@ -78,6 +81,7 @@ class Profile extends Component {
           this.props.auth.registerPayment(unpaid_aht, address)
         },
       })
+      */
     }
   }
   getAmounts() {
@@ -96,8 +100,16 @@ class Profile extends Component {
       unpaid_aht = Math.round((earned - paid) * divider) / divider
     }
     let payment = this.props.payment || []
-    if (payment[0] != undefined && payment[0].status == 'requested') {
-      unpaid_aht -= payment[0].amount
+    for (let v of payment) {
+      if (v != undefined && v.status == 'requested') {
+        if (
+          v.asset == undefined ||
+          v.asset.assetId === undefined ||
+          v.asset.assetId === 'aht'
+        ) {
+          unpaid_aht -= v.amount
+        }
+      }
     }
     if (payment[0] != undefined) {
       last_payment = payment[0].date
@@ -105,7 +117,6 @@ class Profile extends Component {
     const divider = 100000000
     amount_aht = Math.round(amount_aht * divider) / divider
     unpaid_aht = Math.round(unpaid_aht * divider) / divider
-
     return {
       amount_aht: amount_aht,
       unpaid_aht: unpaid_aht,
@@ -114,6 +125,19 @@ class Profile extends Component {
   }
   render() {
     let { amount_aht, unpaid_aht } = this.getAmounts()
+    const available_tokens = this.props.tip.getTokenStatus()
+    console.log(available_tokens)
+    let other_tokens = []
+    for (let v of available_tokens || []) {
+      if (v.token !== 'aht') {
+        other_tokens.push(
+          <p className="mb-1">
+            <b className="text-primary">{v.amount.currentAHT}</b>{' '}
+            <span style={{ color: '#ttt', fontSize: '12px' }}>{v.name}</span>
+          </p>
+        )
+      }
+    }
     return [
       <div className="card card-profile">
         <div
@@ -127,19 +151,20 @@ class Profile extends Component {
             src={this.props.user.photoURL.replace(/_normal/, '')}
           />
           <h3 className="mb-3">{this.props.user.displayName}</h3>
-          <p>
-            <b className="text-danger">{unpaid_aht} AHT</b>{' '}
-            <span style={{ color: '#ttt', fontSize: '12px' }}>未払い</span> /{' '}
-            <b className="text-success">{amount_aht} AHT</b>{' '}
-            <span style={{ color: '#ttt', fontSize: '12px' }}>獲得</span>
+          <p className="mb-1">
+            <b className="text-primary">{unpaid_aht}</b>{' '}
+            <span style={{ color: '#ttt', fontSize: '12px' }}>AHT保有</span> /{' '}
+            <b className="text-success">{amount_aht}</b>{' '}
+            <span style={{ color: '#ttt', fontSize: '12px' }}>AHT獲得</span>
           </p>
+          {other_tokens}
           <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => {
-              this.reservePayment()
+            className="btn btn-outline-primary btn-sm mt-3"
+            onClick={async () => {
+              await this.reservePayment()
             }}
           >
-            未払いトークン引き出し
+            トークン引き出し
           </button>
         </div>
       </div>,

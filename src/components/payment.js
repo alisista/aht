@@ -27,6 +27,10 @@ class Payment extends Component {
           sent = <span>取り消し</span>
           if (v.cancel == 1) {
             confirmation = <span>理由: 残高不足</span>
+          } else if (v.cancel == 2) {
+            confirmation = <span>理由: 小数点不可</span>
+          } else if (v.cancel == 3) {
+            confirmation = <span>理由: トークン非対応</span>
           } else {
             confirmation = <span>理由: 不明</span>
           }
@@ -64,6 +68,10 @@ class Payment extends Component {
           payment_color = 'success'
           inbound = <i className="fa fa-sign-in-alt mr-2" />
         }
+        let token_name = 'AHT'
+        if (v.asset != undefined) {
+          token_name = v.asset.name
+        }
         payment_html.push(
           <tr style={payment_style}>
             <td>{moment(v.date).format('M/D HH:mm')}</td>
@@ -73,7 +81,7 @@ class Payment extends Component {
                 {v.amount}
               </b>{' '}
               <span className="text-muted" style={{ fontSize: '12px' }}>
-                AHT
+                {token_name}
               </span>
             </td>
             <td>{sent}</td>

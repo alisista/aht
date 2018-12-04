@@ -6,7 +6,7 @@ import moment from 'moment-timezone'
 import 'moment/locale/ja'
 
 import waves_icon from '../assets/images/waves.png'
-
+import alis_hackers from '../assets/images/alis_hackers.png'
 moment.locale('ja')
 
 class Waves extends Component {
@@ -181,6 +181,138 @@ class Waves extends Component {
               </button>
             </div>
           </div>
+          {this.renderTokens()}
+        </div>
+      </div>
+    )
+  }
+  round(num) {
+    const divider = 10000000000
+    return Math.round(num * divider) / divider
+  }
+  renderTokens() {
+    let tokens_html = []
+    let amounts = {}
+    if (this.props.serverInfo != undefined) {
+      amounts = this.props.serverInfo.amount || {}
+    }
+    console.log(amounts)
+    let tokens = []
+    for (let k in amounts) {
+      tokens.push({ assetId: k, amount: amounts[k] })
+    }
+    tokens = _(tokens).sortBy(v => {
+      if (v.assetId === 'aht') {
+        return 0
+      } else if (v.assetId === 'WAVES') {
+        return 1
+      } else {
+        return 2
+      }
+    })
+    console.log(tokens)
+    for (let v of tokens) {
+      let hold = 0
+      let amount = v.amount
+      let k = v.assetId
+      let aht = amount.earned
+      const AHT = amount
+      const divider = 10000000000
+      let earned = AHT.earned + (AHT.tipped || 0)
+      let paid = AHT.paid + (AHT.tip || 0)
+      hold = Math.round((earned - paid) * divider) / divider
+      hold = Math.round(hold * divider) / divider
+      aht = Math.round(aht * divider) / divider
+      let icon = 'fa fa-sign-out-alt fa-rotate-180 text-primary'
+      let token_logo
+      if (amount.paid < 0) {
+        icon = 'fa fa-sign-in-alt text-success'
+      }
+
+      let token_href = 'https://wavesplatform.com/'
+      let testnet = ''
+      if (process.env.WAVES_NETWORK === 'TESTNET') {
+        testnet = 'testnet.'
+      }
+      if (v.assetId === 'WAVES') {
+        amount.name = 'WAVES'
+      }
+      if (amount.name != undefined) {
+        if (amount.name != 'WAVES') {
+          token_href = `https://${testnet}wavesexplorer.com/tx/${k}`
+        } else {
+          token_logo = (
+            <img
+              src={waves_icon}
+              className="mr-2 mb-1"
+              style={{ width: '20px' }}
+            />
+          )
+        }
+      } else {
+        if (k === 'aht') {
+          token_logo = (
+            <img
+              src={alis_hackers}
+              className="mr-2"
+              style={{ height: '20px', marginBottom: '2px' }}
+            />
+          )
+          token_href = `https://${testnet}wavesexplorer.com/tx/${
+            process.env.ASSET_ID
+          }`
+        }
+      }
+      let name = amount.name || 'ALIS HackerToken'
+      tokens_html.push(
+        <tr>
+          <td style={{ verticalAlign: 'middle' }}>
+            <div>
+              {token_logo}
+              <a href={token_href} target="_blank">
+                <b>{name}</b>
+              </a>
+            </div>
+          </td>
+          <td>
+            <div>{this.round(amount.earned)}</div>
+          </td>
+          <td>
+            <div>
+              <i className={`${icon} mr-2`} />
+              {this.round(Math.abs(amount.paid))}
+            </div>
+          </td>
+          <td>
+            <div>{this.round(amount.tip)}</div>
+          </td>
+          <td>
+            <div>{this.round(amount.tipped)}</div>
+          </td>
+          <td>
+            <div>
+              <b className="text-primary">{hold}</b>
+            </div>
+          </td>
+        </tr>
+      )
+    }
+    return (
+      <div className="card">
+        <div className="table-responsible">
+          <table className="table table-hover table-outline table-vcenter text-nowrap card-table">
+            <thead>
+              <tr>
+                <th>トークン名</th>
+                <th>獲得額</th>
+                <th>出入金額</th>
+                <th>投げ銭額</th>
+                <th>投げ銭受け取り額</th>
+                <th>現在保有量</th>
+              </tr>
+            </thead>
+            <tbody>{tokens_html}</tbody>
+          </table>
         </div>
       </div>
     )

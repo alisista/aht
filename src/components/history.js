@@ -35,13 +35,17 @@ class History extends Component {
               </div>
             )
           }
+          let token_name = v.asset_name || 'AHT'
+          if (v.asset === 'WAVES') {
+            token_name = 'WAVES'
+          }
           history_html.push(
             <tr>
               <td>{moment(v.date).format('M/D')}</td>
               <td style={{ whiteSpace: 'nowrap' }}>
                 <b className="text-primary">{v.amount}</b>{' '}
                 <span className="text-muted" style={{ fontSize: '12px' }}>
-                  AHT
+                  {token_name}
                 </span>
               </td>
               <td>{reason}</td>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import ComponentP from '../components/component_promise'
 import Helmet from '../components/helmet'
+import Tip from '../lib/tip'
 import url from 'url'
 import querystring from 'querystring'
 
@@ -29,6 +30,7 @@ class Magazine extends ComponentP {
     let page = (this.params.page || 1) * 1
     let magazine_id = this.params.id || 'top'
     this.state = {
+      selected_token: 'aht',
       search_key: '',
       search: 'self',
       tab: 'articles',
@@ -41,6 +43,7 @@ class Magazine extends ComponentP {
       alerts: [],
     }
     this.alerts = new alerts(this, { magazine: true })
+    this.tip = new Tip(this)
   }
   is_editor() {
     return (
@@ -317,154 +320,6 @@ class Magazine extends ComponentP {
       </Layout>
     )
   }
-  async increaseTipAmount(amount) {
-    let tip = Math.round((this.state.tip + amount) * 10) / 10
-    let { currentAHT, afterAHT } = this.getCurrentAHT()
-    if (currentAHT - tip >= 0) {
-      await this.set({ tip: tip })
-      let { currentAHT, afterAHT } = this.getCurrentAHT()
-      window.$('#tip_amount').text(this.state.tip)
-      window.$('#currentAHT').text(currentAHT)
-      window.$('#afterAHT').text(afterAHT)
-      window.$('#modal_exec_btn').removeClass('btn-gray')
-      window.$('#modal_exec_btn').addClass('btn-danger')
-    }
-  }
-  async resetTipAmount() {
-    await this.set({ tip: 0 })
-    let { currentAHT, afterAHT } = this.getCurrentAHT()
-    window.$('#tip_amount').text(this.state.tip)
-    window.$('#currentAHT').text(currentAHT)
-    window.$('#afterAHT').text(afterAHT)
-    window.$('#modal_exec_btn').removeClass('btn-danger')
-    window.$('#modal_exec_btn').addClass('btn-gray')
-  }
-
-  getCurrentAHT() {
-    const divider = 100000000
-    let amount = this.state.serverInfo.amount.aht
-    let earned = amount.earned + (amount.tipped || 0)
-    let paid = amount.paid + (amount.tip || 0)
-    let currentAHT = Math.round((earned - paid) * divider) / divider
-    let afterAHT = Math.round((currentAHT - this.state.tip) * divider) / divider
-    return { currentAHT: currentAHT, afterAHT: afterAHT }
-  }
-  async tip(article) {
-    if (this.state.user == undefined) {
-      this.showModal({
-        title: (
-          <div>
-            <i className="text-danger fa fa-donate" /> エラー！
-          </div>
-        ),
-        body: <p>投げ銭をするにはログインが必要です！</p>,
-        cancel_text: '確認',
-      })
-    } else if (
-      this.state.serverInfo != undefined &&
-      this.state.serverInfo.alis != undefined &&
-      article.user_id === this.state.serverInfo.alis.user_id
-    ) {
-      this.showModal({
-        title: (
-          <div>
-            <i className="text-danger fa fa-donate" /> エラー！
-          </div>
-        ),
-        body: <p>自分の記事には投げ錢できません！</p>,
-        cancel_text: '確認',
-      })
-    } else {
-      let { currentAHT, afterAHT } = this.getCurrentAHT()
-
-      if (currentAHT === 0) {
-        this.showModal({
-          title: (
-            <div>
-              <i className="text-danger fa fa-donate" /> 残高不足！
-            </div>
-          ),
-          body: <p>投げ銭をするにはAHTを保有している必要があります！</p>,
-          cancel_text: '確認',
-        })
-      } else {
-        await this.set({ tip: 0 })
-        let tips = [0.1, 1, 10, 100]
-        let tips_html = []
-        for (let v of tips) {
-          tips_html.push(
-            <button
-              className="btn btn-primary m-3"
-              style={{ borderRadius: '50%', width: '60px', height: '60px' }}
-              onClick={() => {
-                this.increaseTipAmount(v)
-              }}
-            >
-              {v}
-            </button>
-          )
-        }
-        tips_html.push(
-          <button
-            className="btn btn-warning m-3"
-            style={{ borderRadius: '50%', width: '60px', height: '60px' }}
-            onClick={() => {
-              this.resetTipAmount()
-            }}
-          >
-            0
-          </button>
-        )
-        window.$('#tip_amount').text(0)
-        window.$('#currentAHT').text(currentAHT)
-        window.$('#afterAHT').text(currentAHT)
-        window.$('#modal_exec_btn').removeClass('btn-danger')
-        window.$('#modal_exec_btn').addClass('btn-gray')
-        this.showModal({
-          title: (
-            <div>
-              <i className="text-primary fa fa-donate" />{' '}
-              投げ銭額を選択してください！
-            </div>
-          ),
-          body: (
-            <div>
-              <div className="text-center" style={{ fontSize: '30px' }}>
-                <b id="tip_amount" className="text-primary">
-                  0
-                </b>{' '}
-                <span className="text-muted small" style={{ fontSize: '12px' }}>
-                  AHT
-                </span>
-              </div>
-              <div className="text-center">{tips_html}</div>
-              <div className="text-center">
-                保有:{' '}
-                <b className="text-primary" id="currentAHT">
-                  {currentAHT}
-                </b>{' '}
-                <span className="text-muted small">AHT</span>{' '}
-                <i className="fa fa-angle-double-right" />{' '}
-                <b className="text-danger" id="afterAHT">
-                  {currentAHT}
-                </b>{' '}
-                <span className="text-muted small">AHT</span>
-              </div>
-            </div>
-          ),
-          exec_color: 'gray',
-          exec: () => {
-            this.exec_tip(article)
-          },
-        })
-      }
-    }
-  }
-  exec_tip(article) {
-    if (this.state.tip > 0) {
-      this.auth.tip(this.state.tip, article, this.state.magazine.file_id)
-    }
-  }
   render_dashboard() {
     if (this.state.tab === 'articles') {
       return this.render_dashboard_articles()
@@ -605,6 +460,7 @@ class Magazine extends ComponentP {
   drawMagazine(article) {
     let magazine_articles = []
     for (let v of article.articles) {
+      console.log(v)
       magazine_articles.push(
         <tr>
           <td className="w-1">
@@ -660,7 +516,18 @@ class Magazine extends ComponentP {
     )
     return html
   }
+  deepClone(obj) {
+    let cloned = {}
+    for (let k in obj) {
+      cloned[k] = {}
+      for (let k2 in obj[k]) {
+        cloned[k][k2] = obj[k][k2]
+      }
+    }
+    return cloned
+  }
   drawArticle(article) {
+    let tip_others = this.deepClone(article.tip_others || {})
     let last_tip = article.last_tip || 0
     let tip = article.tip || 0
     for (let v of this.state.tip_history || []) {
@@ -669,17 +536,34 @@ class Magazine extends ComponentP {
         last_tip < v.date &&
         this.state.magazine.file_id === (v.magazine_id || 'admin')
       ) {
-        tip += v.amount
+        if (v.asset == undefined || v.asset === 'aht') {
+          tip += v.amount
+        } else {
+          if (tip_others[v.asset] == undefined) {
+            tip_others[v.asset] = { amount: 0, name: v.asset_name || 'unknown' }
+          }
+          tip_others[v.asset].amount += v.amount
+        }
       }
     }
     tip = Math.round(tip * 10) / 10
+    let others_html = []
+    for (let k in tip_others) {
+      let token = tip_others[k]
+      let amount = Math.round(token.amount * 10) / 10
+      others_html.push(
+        <span className="small ml-2 mt-3">
+          <span className="text-primary">{amount}</span> {token.name}
+        </span>
+      )
+    }
     let tip_btn
     if (article.notip !== true) {
       tip_btn = (
         <div className="ml-auto text-danger">
           <a
             onClick={() => {
-              this.tip(article)
+              this.tip.tip(article)
             }}
             className="icon d-inline-block ml-3"
             style={{ fontSize: '20px' }}
@@ -738,6 +622,9 @@ class Magazine extends ComponentP {
                 </small>
               </div>
               {tip_btn}
+            </div>
+            <div className="text-muted" style={{ textAlign: 'right' }}>
+              {others_html}
             </div>
           </div>
         </div>

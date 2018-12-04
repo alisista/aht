@@ -54,6 +54,7 @@ class Modal extends Component {
               {modal.body}
             </div>
             <div className="modal-footer">
+              {this.props.modal.extra_footer}
               <button
                 type="button"
                 className="btn btn-secondary"

@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
+import ComponentP from '../components/component_promise'
 import Helmet from '../components/helmet'
+import Tip from '../lib/tip'
 import url from 'url'
 import querystring from 'querystring'
 
@@ -29,7 +31,7 @@ import alerts from '../lib/alerts'
 
 moment.locale('ja')
 
-class Home extends Component {
+class Home extends ComponentP {
   constructor(props) {
     super(props)
     let redirectedUrl = props.location.href || ''
@@ -76,6 +78,7 @@ class Home extends Component {
       social_links: {},
     }
     this.alerts = new alerts(this)
+    this.tip = new Tip(this)
   }
 
   componentDidMount() {
@@ -186,6 +189,7 @@ class Home extends Component {
           showModal={this.showModal}
           user={this.state.user}
           userInfo={this.state.userInfo}
+          serverInfo={this.state.serverInfo}
           auth={this.auth}
         />
       )
@@ -288,6 +292,7 @@ class Home extends Component {
         <div className="row">
           <div className="col-lg-4">
             <Profile
+              tip={this.tip}
               user={this.state.user}
               payment={this.state.payment}
               serverInfo={this.state.serverInfo}

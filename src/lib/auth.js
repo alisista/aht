@@ -564,19 +564,39 @@ class Auth {
     await this.component.set({ all_articles: articles })
   }
 
-  tip(amount, article, magazine_id) {
+  tip(amount, article, magazine_id, selected_token) {
     this.genRandomValue(random_value => {
+      let params = {
+        random_value: random_value,
+        article: JSON.stringify(article),
+        uid: this.component.state.user.uid,
+        magazine_id: magazine_id,
+        amount: amount,
+      }
+      if (selected_token != undefined) {
+        params.asset = selected_token
+      }
       window.$.post(
         `${process.env.BACKEND_SERVER_ORIGIN}/${prefix}/tip/`,
-        {
-          random_value: random_value,
-          article: JSON.stringify(article),
-          uid: this.component.state.user.uid,
-          magazine_id: magazine_id,
-          amount: amount,
-        },
+        params,
         json => {
-          if (json.error != null || json.tip === false) {
+          console.log(json)
+          if (json.tip === false) {
+            this.component.showModal({
+              title: (
+                <div>
+                  <i className="text-danger fas fa-ban" /> ユーザー不在！
+                </div>
+              ),
+              body: (
+                <div>
+                  『{article.title}
+                  』をを書いたユーザーが存在しないため投げ銭できません。
+                </div>
+              ),
+              cancel_text: '確認',
+            })
+          } else if (json.error != null) {
             this.component.showModal(modals.error_general)
           } else {
             this.component.showModal({
@@ -797,7 +817,7 @@ class Auth {
         this.component.showModal(modals.error_exists)
       })
   }
-  registerPayment(amount, address) {
+  registerPayment(amount, address, asset, asset_name) {
     let uid = this.component.state.user.uid
     let payment = this.component.state.payment
     let date = Date.now()
@@ -814,6 +834,16 @@ class Auth {
       date: date,
       status: 'requested',
     }
+    if (asset != undefined) {
+      if (asset === 'WAVES') {
+        asset_name = 'WAVES'
+      }
+      transaction_pool.asset = asset
+      transaction.asset = { assetId: asset, name: asset_name }
+      transaction_pool.asset_name = asset_name
+    }
+    console.log(transaction)
+    console.log(transaction_pool)
     payment.unshift(transaction)
     this.db
       .collection('users')
